@@ -1,5 +1,5 @@
-import mongoose, { Document, mongo } from "mongoose";
-import { CurrencyType, Product, ProductReference } from "../types";
+import mongoose from "mongoose";
+import { CurrencyType, ProductFromDB } from "../types";
 
 const productSchema = new mongoose.Schema({
 	name: { type: String, required: true },
@@ -12,30 +12,12 @@ const productSchema = new mongoose.Schema({
 		required: true,
 	},
 
-	// costo por referencia
-	costByReference: { type: Boolean, default: false },
-	parentReferences: [
-		{
-			_id: mongoose.Schema.Types.ObjectId,
-			cost: { type: Number, default: 0 },
-			percentage: { type: Number, default: 1 },
-		},
-	],
-
 	// palabras clave para busqueda
 	keywords: { type: [String], required: true },
 });
 
-productSchema.methods.calculateCost = function (
-	references: ProductReference[]
-) {
-	let total = 0;
+// actualizar el valor de las referecias
 
-	references.map((r) => {
-		total += r.cost * r.percentage;
-	});
+// actualizar el valor del precio segun sus referencias
 
-	return total;
-};
-
-export default mongoose.model<Product>("Product", productSchema);
+export default mongoose.model<ProductFromDB>("Product", productSchema);

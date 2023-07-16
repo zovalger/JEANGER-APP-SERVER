@@ -6,7 +6,7 @@ import {
 	getProducts_service,
 	updateProducts_service,
 } from "../services/ProductService";
-import { Frontend_Product } from "../types";
+import { Product } from "../types";
 
 export const getProducts_controller = async (_req: Request, res: Response) => {
 	try {
@@ -37,9 +37,7 @@ export const createProduct_controller = async (req: Request, res: Response) => {
 		cost,
 		currencyType,
 		keywords,
-		costByReference,
-		parentReferences,
-	}: Frontend_Product = req.body;
+	}: Product = req.body;
 
 	try {
 		const product = await createProduct_service({
@@ -47,8 +45,6 @@ export const createProduct_controller = async (req: Request, res: Response) => {
 			cost,
 			currencyType,
 			keywords,
-			costByReference,
-			parentReferences,
 		});
 
 		return res.status(200).json(product);
@@ -68,9 +64,7 @@ export const updateProducts_controller = async (
 		cost,
 		currencyType,
 		keywords,
-		costByReference,
-		parentReferences,
-	}: Frontend_Product = req.body;
+	}: Product = req.body;
 
 	try {
 		const product = await updateProducts_service(_id, {
@@ -78,8 +72,6 @@ export const updateProducts_controller = async (
 			cost,
 			currencyType,
 			keywords,
-			costByReference,
-			parentReferences,
 		});
 
 		return res.status(200).json(product);

@@ -1,7 +1,17 @@
+import { ObjectId } from "mongoose";
 import ProductModel from "../models/Product.model";
-import { Frontend_Product, Product, ProductReference } from "../types";
+import {
+	CurrencyType,
+	DolarValue,
+	Product,
+	ProductFromDB,
+	ProductReference,
+} from "../types";
+import { getProductReference_by_ChildId_service } from "./ProductReferenceService";
 
-export const getProducts_service = async (): Promise<Product[] | undefined> => {
+export const getProducts_service = async (): Promise<
+	ProductFromDB[] | [] | undefined
+> => {
 	try {
 		const products = await ProductModel.find().sort({ name: 1 });
 
@@ -14,7 +24,7 @@ export const getProducts_service = async (): Promise<Product[] | undefined> => {
 
 export const getProduct_service = async (
 	_id: string
-): Promise<Product | undefined> => {
+): Promise<ProductFromDB | undefined> => {
 	try {
 		const product = await ProductModel.findById(_id);
 
@@ -25,9 +35,38 @@ export const getProduct_service = async (
 	}
 };
 
+export const getCost_by_ChildId_service = async (
+	childId: string | ObjectId,
+	dolarValue: DolarValue
+): Promise<number | undefined> => {
+	try {
+		const productReference = await getProductReference_by_ChildId_service(
+			childId
+		);
+
+		if (!productReference) return;
+
+		const cost = productReference.reduce(
+			(total: number, reference: ProductReference) => {
+				const { cost, currencyType } = reference;
+
+				return total + currencyType == CurrencyType.USD
+					? cost / dolarValue.value
+					: cost;
+			},
+			0
+		);
+
+		return cost;
+	} catch (error) {
+		console.log();
+		return 0;
+	}
+};
+
 export const createProduct_service = async (
-	data: Frontend_Product
-): Promise<Product | undefined> => {
+	data: Product
+): Promise<ProductFromDB | undefined> => {
 	try {
 		const product = new ProductModel(data);
 
@@ -41,16 +80,9 @@ export const createProduct_service = async (
 
 export const updateProducts_service = async (
 	_id: string,
-	data: Frontend_Product
-): Promise<Product | undefined> => {
-	const {
-		name,
-		cost,
-		currencyType,
-		keywords,
-		costByReference,
-		parentReferences,
-	} = data;
+	data: Product
+): Promise<ProductFromDB | undefined> => {
+	const { name, cost, currencyType, keywords } = data;
 
 	try {
 		const product = await ProductModel.findById(_id);
@@ -60,17 +92,11 @@ export const updateProducts_service = async (
 		product.name = name;
 		product.currencyType = currencyType;
 		product.keywords = keywords;
-		product.costByReference = costByReference;
-		product.parentReferences = parentReferences;
 
-		product.cost =
-			parentReferences.length > 0
-				? product.calculateCost(parentReferences)
-				: cost;
+		// todo: ver que no tenga referencias
+		if (typeof cost === "number") product.cost = cost;
 
 		await product.save();
-
-		await recursiveUpdateCostProduct_service(product._id, product.cost);
 
 		return product;
 	} catch (error) {
@@ -78,33 +104,40 @@ export const updateProducts_service = async (
 	}
 };
 
+// todo: actualizar cost de hijos de hijos
+
 // actualizar referencias y los costos de todos los productos dependientes
 
-export const recursiveUpdateCostProduct_service = async (
-	parentId: string,
-	cost: number
-) => {
-	const products = await ProductModel.find({
-		parentReferences: { $in: [{ _id: parentId }] },
-	});
+// export const recursiveUpdateCostProduct_service = async (
+// 	parentId: string,
+// 	cost: number,
+// 	currencyType: CurrencyType
+// ) => {
+// 	const products = await ProductModel.find({
+// 		parentReferences: { $in: [{ _id: parentId }] },
+// 	});
 
-	await Promise.all(
-		await products.map(async (product: Product) => {
-			product.parentReferences = product.parentReferences.map(
-				(reference: ProductReference) =>
-					reference.parentId?.toString() == parentId.toString()
-						? { ...reference, cost }
-						: reference
-			);
+// await Promise.all(
+// 	await products.map(async (product: Product) => {
+// 		product.parentReferences = product.parentReferences.map(
+// 			(reference: ProductReference) =>
+// 				reference.parentId?.toString() == parentId.toString()
+// 					? { ...reference, cost, currencyType }
+// 					: reference
+// 		);
 
-			product.cost = product.calculateCost(product.parentReferences);
+// 		product.cost = product.calculateCost(product.parentReferences);
 
-			await product.save();
+// 		await product.save();
 
-			await recursiveUpdateCostProduct_service(product._id, product.cost);
-		})
-	);
-};
+// 		await recursiveUpdateCostProduct_service(
+// 			product._id,
+// 			product.cost,
+// 			product.currencyType
+// 		);
+// 	})
+// );
+// };
 
 export const deleteProduct_service = async (
 	_id: string

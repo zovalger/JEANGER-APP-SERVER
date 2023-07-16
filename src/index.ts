@@ -1,12 +1,8 @@
-import { DiaryEntry } from "./types";
+import app from "./app";
+import { PORT } from "./config";
+import connectToMongoDB from "./db";
 
-const diaries: Array<DiaryEntry> = [
-	{
-		
-		    id: 1,
-		date: "string",
-		weather: "rainy",
-		visibility: "good",
-		commet: "string",
-	},
-];
+(async () => {
+	await connectToMongoDB();
+	app.listen(PORT);
+})();
