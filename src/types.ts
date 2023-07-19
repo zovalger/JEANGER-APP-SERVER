@@ -1,5 +1,9 @@
 import mongoose, { Document } from "mongoose";
 
+// ****************************************************************************
+// 										              Productos
+// ****************************************************************************
+
 export enum CurrencyType {
 	USD = "USD",
 	BSF = "BSF",
@@ -8,6 +12,8 @@ export interface DolarValue {
 	value: number;
 	date: Date;
 }
+
+export interface DolarValueFromDB extends Document, DolarValue {}
 
 export interface Product {
 	_id?: string;
@@ -23,14 +29,29 @@ export interface ProductFromDB extends Document, Product {
 	updateMyCost(dolarValue: DolarValue): number;
 }
 
+// ****************************************************************************
+// 										          productos: referencias
+// ****************************************************************************
+
 export interface ProductReference {
 	parentId: string;
 	childId: string;
 	cost: number;
-	percentage: number;
 	currencyType: CurrencyType;
+	percentage: number;
+	amount: number;
 }
 
 export interface ProductReferenceFromDB extends ProductReference, Document {
 	_id: mongoose.Types.ObjectId;
+}
+
+// ****************************************************************************
+// 										          productos: Tareas
+// ****************************************************************************
+
+export interface ProductTask extends Document {
+	productId: string;
+	date: Date;
+	timeoutId: number;
 }

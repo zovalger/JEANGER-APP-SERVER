@@ -13,6 +13,7 @@ import { NODE_ENV } from "./config";
 // ****************************************************************************
 
 import ProductRouter from "./routes/Product.route";
+import ProductReferencesRouter from "./routes/ProductReference.route";
 
 // ****************************************************************************
 // 										           Inicio de App
@@ -40,6 +41,8 @@ app.use(
 // ****************************************************************************
 
 app.use("/api/product", ProductRouter);
+app.use("/api/product/reference", ProductReferencesRouter);
+
 
 app.use("/uploads", express.static(path.join(path.resolve(), "/uploads")));
 

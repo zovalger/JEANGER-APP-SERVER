@@ -1,30 +1,32 @@
 import { Request, Response } from "express";
 import { ProductReference } from "../types";
 import {
-	createBulkProductReference_service,
 	createProductReference_service,
-	deleteProductReference_service,
+	deleteProductReference_by_ProductsId_service,
 	getProductReference_by_ChildId_service,
 	getProductReference_by_ParentId_service,
-	updateProductReferences_service,
+	updateProductReference_service,
 } from "../services/ProductReferenceService";
 
 // ****************************************************************************
 // 										              Crear
 // ****************************************************************************
 
-
 export const createProductReference_controller = async (
 	req: Request,
 	res: Response
 ) => {
-	const data: ProductReference | ProductReference[] = req.body;
+	const { parentId, childId } = req.params;
+
+	const { percentage, amount }: ProductReference = req.body;
 
 	try {
-		const productReference =
-			data instanceof Array
-				? await createBulkProductReference_service(data)
-				: await createProductReference_service(data);
+		const productReference = await createProductReference_service({
+			parentId,
+			childId,
+			percentage,
+			amount,
+		});
 
 		return res.status(200).json(productReference);
 	} catch (error) {
@@ -35,7 +37,6 @@ export const createProductReference_controller = async (
 // ****************************************************************************
 // 										              obtener
 // ****************************************************************************
-
 
 export const getProductReference_By_ParentId_controller = async (
 	req: Request,
@@ -75,12 +76,17 @@ export const getProductReference_By_ChildId_controller = async (
 // 										              eliminar
 // ****************************************************************************
 
-
-export const deleteProduct_controller = async (req: Request, res: Response) => {
-	const { _id } = req.params;
+export const deleteProductReference_controller = async (
+	req: Request,
+	res: Response
+) => {
+	const { parentId, childId } = req.params;
 
 	try {
-		const result = await deleteProductReference_service(_id);
+		const result = await deleteProductReference_by_ProductsId_service(
+			parentId,
+			childId
+		);
 
 		return res.status(200).json(result);
 	} catch (error) {
@@ -93,16 +99,20 @@ export const deleteProduct_controller = async (req: Request, res: Response) => {
 // 										              actualizar
 // ****************************************************************************
 
-
-export const updateProducts_controller = async (
+export const updateProductReference_controller = async (
 	req: Request,
 	res: Response
 ) => {
-	const { _id } = req.params;
-	const data: ProductReference = req.body;
+	const { parentId, childId } = req.params;
+	const { percentage, amount }: ProductReference = req.body;
 
 	try {
-		const productReference = await updateProductReferences_service(_id, data);
+		const productReference = await updateProductReference_service({
+			percentage,
+			amount,
+			parentId,
+			childId,
+		});
 
 		return res.status(200).json(productReference);
 	} catch (error) {
@@ -110,6 +120,3 @@ export const updateProducts_controller = async (
 		return res.status(500).json({ error, message: "" });
 	}
 };
-
-
-// todo: actualizar por array de datos

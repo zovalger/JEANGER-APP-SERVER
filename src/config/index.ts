@@ -8,5 +8,7 @@ export const NODE_ENV = process.env.NODE_ENV;
 
 export const SECRET_WORD = process.env.SECRET_WORD;
 
-const defaultMongodbUri = "mongodb://127.0.0.1/test";
-export const MONGODB_URI = process.env.MONGODB_URI || defaultMongodbUri;
+export const MONGODB_URI =
+	process.env.MONGODB_URI ||
+	process.env.MONGODB_URI_TEST ||
+	"mongodb://127.0.0.1/test";

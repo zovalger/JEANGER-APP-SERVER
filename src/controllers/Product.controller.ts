@@ -8,6 +8,10 @@ import {
 } from "../services/ProductService";
 import { Product } from "../types";
 
+// ****************************************************************************
+// 										              obtener
+// ****************************************************************************
+
 export const getProducts_controller = async (_req: Request, res: Response) => {
 	try {
 		const products = await getProducts_service();
@@ -31,13 +35,12 @@ export const getProduct_controller = async (req: Request, res: Response) => {
 	}
 };
 
+// ****************************************************************************
+// 										              crear
+// ****************************************************************************
+
 export const createProduct_controller = async (req: Request, res: Response) => {
-	const {
-		name,
-		cost,
-		currencyType,
-		keywords,
-	}: Product = req.body;
+	const { name, cost, currencyType, keywords }: Product = req.body;
 
 	try {
 		const product = await createProduct_service({
@@ -54,17 +57,16 @@ export const createProduct_controller = async (req: Request, res: Response) => {
 	}
 };
 
+// ****************************************************************************
+// 										              actualizar
+// ****************************************************************************
+
 export const updateProducts_controller = async (
 	req: Request,
 	res: Response
 ) => {
 	const { _id } = req.params;
-	const {
-		name,
-		cost,
-		currencyType,
-		keywords,
-	}: Product = req.body;
+	const { name, cost, currencyType, keywords }: Product = req.body;
 
 	try {
 		const product = await updateProducts_service(_id, {
@@ -80,6 +82,10 @@ export const updateProducts_controller = async (
 		return res.status(500).json({ error, message: "" });
 	}
 };
+
+// ****************************************************************************
+// 										              eliminar
+// ****************************************************************************
 
 export const deleteProduct_controller = async (req: Request, res: Response) => {
 	const { _id } = req.params;

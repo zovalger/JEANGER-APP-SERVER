@@ -6,6 +6,7 @@ const productReferenceSchema = new mongoose.Schema({
 	childId: { type: mongoose.Schema.Types.ObjectId },
 	cost: { type: Number, default: 0 },
 	percentage: { type: Number, default: 1 },
+	amount: { type: Number, default: 1 },
 	currencyType: {
 		type: String,
 		enum: Object.values(CurrencyType),

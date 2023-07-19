@@ -1,13 +1,15 @@
 import { ObjectId } from "mongoose";
 import ProductModel from "../models/Product.model";
+import { Product, ProductFromDB } from "../types";
 import {
-	CurrencyType,
-	DolarValue,
-	Product,
-	ProductFromDB,
-	ProductReference,
-} from "../types";
-import { getProductReference_by_ChildId_service } from "./ProductReferenceService";
+	getCost_by_References_service,
+	getProductReference_by_ParentId_service,
+	updateProductReferences_Recursive_service,
+} from "./ProductReferenceService";
+
+// ****************************************************************************
+// 										              obtener
+// ****************************************************************************
 
 export const getProducts_service = async (): Promise<
 	ProductFromDB[] | [] | undefined
@@ -23,7 +25,7 @@ export const getProducts_service = async (): Promise<
 };
 
 export const getProduct_service = async (
-	_id: string
+	_id: string | ObjectId
 ): Promise<ProductFromDB | undefined> => {
 	try {
 		const product = await ProductModel.findById(_id);
@@ -35,34 +37,9 @@ export const getProduct_service = async (
 	}
 };
 
-export const getCost_by_ChildId_service = async (
-	childId: string | ObjectId,
-	dolarValue: DolarValue
-): Promise<number | undefined> => {
-	try {
-		const productReference = await getProductReference_by_ChildId_service(
-			childId
-		);
-
-		if (!productReference) return;
-
-		const cost = productReference.reduce(
-			(total: number, reference: ProductReference) => {
-				const { cost, currencyType } = reference;
-
-				return total + currencyType == CurrencyType.USD
-					? cost / dolarValue.value
-					: cost;
-			},
-			0
-		);
-
-		return cost;
-	} catch (error) {
-		console.log();
-		return 0;
-	}
-};
+// ****************************************************************************
+// 										              crear
+// ****************************************************************************
 
 export const createProduct_service = async (
 	data: Product
@@ -78,6 +55,10 @@ export const createProduct_service = async (
 	}
 };
 
+// ****************************************************************************
+// 										              actualizar
+// ****************************************************************************
+
 export const updateProducts_service = async (
 	_id: string,
 	data: Product
@@ -92,11 +73,13 @@ export const updateProducts_service = async (
 		product.name = name;
 		product.currencyType = currencyType;
 		product.keywords = keywords;
-
-		// todo: ver que no tenga referencias
-		if (typeof cost === "number") product.cost = cost;
+		product.cost = cost;
 
 		await product.save();
+
+		await updateProductReferences_Recursive_service(product._id);
+
+		// await product.save();
 
 		return product;
 	} catch (error) {
@@ -104,50 +87,44 @@ export const updateProducts_service = async (
 	}
 };
 
-// todo: actualizar cost de hijos de hijos
+export const updateCost_by_References_service = async (
+	productId: string | ObjectId
+): Promise<ProductFromDB | undefined> => {
+	try {
+		console.log("actualizando costo de", productId);
 
-// actualizar referencias y los costos de todos los productos dependientes
+		const product = await getProduct_service(productId);
 
-// export const recursiveUpdateCostProduct_service = async (
-// 	parentId: string,
-// 	cost: number,
-// 	currencyType: CurrencyType
-// ) => {
-// 	const products = await ProductModel.find({
-// 		parentReferences: { $in: [{ _id: parentId }] },
-// 	});
+		if (!product) {
+			console.log("no hay producto que actualizar");
+			return;
+		}
 
-// await Promise.all(
-// 	await products.map(async (product: Product) => {
-// 		product.parentReferences = product.parentReferences.map(
-// 			(reference: ProductReference) =>
-// 				reference.parentId?.toString() == parentId.toString()
-// 					? { ...reference, cost, currencyType }
-// 					: reference
-// 		);
+		product.cost =
+			(await getCost_by_References_service(productId)) || product.cost;
 
-// 		product.cost = product.calculateCost(product.parentReferences);
+		await product.save();
 
-// 		await product.save();
+		console.log("costo de", product.name, "actualizado");
 
-// 		await recursiveUpdateCostProduct_service(
-// 			product._id,
-// 			product.cost,
-// 			product.currencyType
-// 		);
-// 	})
-// );
-// };
+		return product;
+	} catch (error) {
+		console.log();
+		return;
+	}
+};
+
+// ****************************************************************************
+// 										              eliminar
+// ****************************************************************************
 
 export const deleteProduct_service = async (
 	_id: string
 ): Promise<boolean | undefined> => {
 	try {
-		const childs = await ProductModel.find({
-			parentReferences: { $in: [{ _id }] },
-		});
+		const childs = await getProductReference_by_ParentId_service(_id);
 
-		if (childs.length) return;
+		if (childs && childs.length) return;
 
 		const result = await ProductModel.deleteOne({ _id });
 

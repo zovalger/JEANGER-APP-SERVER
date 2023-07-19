@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { CurrencyType, ProductFromDB } from "../types";
 
 const productSchema = new mongoose.Schema({
-	name: { type: String, required: true },
+	name: { type: String, required: true, trim: true },
 	cost: { type: Number, required: true },
 
 	// tipo de moneda
@@ -13,7 +13,7 @@ const productSchema = new mongoose.Schema({
 	},
 
 	// palabras clave para busqueda
-	keywords: { type: [String], required: true },
+	keywords: { type: [String], required: true, trim: true },
 });
 
 // actualizar el valor de las referecias
