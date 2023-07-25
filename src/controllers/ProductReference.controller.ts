@@ -3,6 +3,7 @@ import { ProductReference } from "../types";
 import {
 	createProductReference_service,
 	deleteProductReference_by_ProductsId_service,
+	getPosibleProductParents_By_ProductId_service,
 	getProductReference_by_ChildId_service,
 	getProductReference_by_ParentId_service,
 	updateProductReference_service,
@@ -66,6 +67,23 @@ export const getProductReference_By_ChildId_controller = async (
 		const productReference = await getProductReference_by_ChildId_service(_id);
 
 		return res.status(200).json(productReference);
+	} catch (error) {
+		console.log(error);
+		return res.status(500).json({ error, message: "" });
+	}
+};
+
+export const getPosibleProductParents_By_ProductId_controller = async (
+	req: Request,
+	res: Response
+) => {
+	try {
+		const { _id } = req.params;
+
+		const productPosibleParents =
+			await getPosibleProductParents_By_ProductId_service(_id);
+
+		return res.status(200).json(productPosibleParents);
 	} catch (error) {
 		console.log(error);
 		return res.status(500).json({ error, message: "" });

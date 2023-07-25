@@ -10,6 +10,7 @@ import {
 	updateCost_by_References_service,
 } from "./ProductService";
 import { getDolar_service } from "./DolarService";
+import ProductModel from "../models/Product.model";
 
 // ****************************************************************************
 // 										              Crear
@@ -88,6 +89,35 @@ export const getProductReference_by_ParentId_service = async (
 		const productReference = await ProductReferenceModel.find({ parentId });
 
 		return productReference || undefined;
+	} catch (error) {
+		console.log();
+		return;
+	}
+};
+
+export const getPosibleProductParents_By_ProductId_service = async (
+	childId: string | ObjectId
+): Promise<string[] | undefined> => {
+	try {
+		const curretParents = await ProductReferenceModel.find({ childId });
+
+		const noId = [childId, ...curretParents.map((v) => v.parentId)];
+
+		for (let index = 1; index < noId.length; index++) {
+			const p = noId[index];
+
+			const afterParent = await ProductReferenceModel.find({ childId: p });
+
+			afterParent.forEach((pr) => {
+				const found = noId.find((id) => id.toString() === pr.parentId.toString());
+
+				if (!found) noId.push(pr.parentId);
+			});
+		}
+
+		const toParents = await ProductModel.find().where("_id", { $nin: noId });
+
+		return toParents.map((v) => v._id) || undefined;
 	} catch (error) {
 		console.log();
 		return;

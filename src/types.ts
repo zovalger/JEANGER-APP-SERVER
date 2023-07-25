@@ -39,6 +39,7 @@ export interface ProductReference {
 	cost: number;
 	currencyType: CurrencyType;
 	percentage: number;
+	// cambiar por "quantity"
 	amount: number;
 }
 

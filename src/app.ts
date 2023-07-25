@@ -12,6 +12,7 @@ import { NODE_ENV } from "./config";
 // 										              Endpoints
 // ****************************************************************************
 
+import DolarRouter from "./routes/Dolar.route";
 import ProductRouter from "./routes/Product.route";
 import ProductReferencesRouter from "./routes/ProductReference.route";
 
@@ -40,9 +41,9 @@ app.use(
 // 										              Endpoints api
 // ****************************************************************************
 
+app.use("/api/dolar", DolarRouter);
 app.use("/api/product", ProductRouter);
 app.use("/api/product/reference", ProductReferencesRouter);
-
 
 app.use("/uploads", express.static(path.join(path.resolve(), "/uploads")));
 
@@ -64,5 +65,4 @@ app.use((err: any, req: any, res: any) => {
 	res.json({ error: err });
 });
 
-
-export default app
+export default app;

@@ -6,7 +6,11 @@ import {
 	getProducts_controller,
 	updateProducts_controller,
 } from "../controllers/Product.controller";
-import { getProductReference_By_ChildId_controller } from "../controllers/ProductReference.controller";
+
+import {
+	getPosibleProductParents_By_ProductId_controller,
+	getProductReference_By_ChildId_controller,
+} from "../controllers/ProductReference.controller";
 
 const router = express.Router();
 
@@ -15,9 +19,12 @@ router.post("/", createProduct_controller);
 
 router.get("/:_id", getProduct_controller);
 router.get("/:_id/reference", getProductReference_By_ChildId_controller);
+router.get(
+	"/:_id/reference/to_parent",
+	getPosibleProductParents_By_ProductId_controller
+);
 
 router.put("/:_id", updateProducts_controller);
 router.delete("/:_id", deleteProduct_controller);
 
-
-export default router
+export default router;
