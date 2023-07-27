@@ -13,6 +13,7 @@ import { NODE_ENV } from "./config";
 // ****************************************************************************
 
 import DolarRouter from "./routes/Dolar.route";
+import StopwatchRouter from "./routes/Stopwatch.route";
 import ProductRouter from "./routes/Product.route";
 import ProductReferencesRouter from "./routes/ProductReference.route";
 
@@ -42,6 +43,7 @@ app.use(
 // ****************************************************************************
 
 app.use("/api/dolar", DolarRouter);
+app.use("/api/stopwatch", StopwatchRouter);
 app.use("/api/product", ProductRouter);
 app.use("/api/product/reference", ProductReferencesRouter);
 

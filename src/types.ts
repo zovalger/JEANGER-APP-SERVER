@@ -1,4 +1,5 @@
 import mongoose, { Document } from "mongoose";
+import { StopwatchEvents } from "./config/SocketEventsSystem";
 
 // ****************************************************************************
 // 										              Productos
@@ -48,11 +49,41 @@ export interface ProductReferenceFromDB extends ProductReference, Document {
 }
 
 // ****************************************************************************
-// 										          productos: Tareas
+// 										          Cronometros
 // ****************************************************************************
 
-export interface ProductTask extends Document {
-	productId: string;
-	date: Date;
-	timeoutId: number;
+export interface Stopwatch {
+	_id?: string;
+	name: string;
+	timeDate: Date;
+	accumulatedTime: number;
+	timeSeted: number;
 }
+
+export interface StopwatchFromDB extends Document {
+	_id: mongoose.Types.ObjectId;
+}
+
+
+
+// ****************************************************************************
+// 										          sockets
+// ****************************************************************************
+
+
+// export enum CurrencyType {
+// 	USD = "USD",
+// 	BSF = "BSF",
+// }
+
+
+
+// export interface ServerToClientEvents {
+//   [StopwatchEvents.create]: () => void;
+//   basicEmit: (a: number, b: string, c: Buffer) => void;
+//   withAck: (d: string, callback: (e: number) => void) => void;
+// }
+
+// interface ClientToServerEvents {
+//   hello: () => void;
+// }
