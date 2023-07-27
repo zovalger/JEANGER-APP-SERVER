@@ -1,5 +1,4 @@
 import mongoose, { Document } from "mongoose";
-import { StopwatchEvents } from "./config/SocketEventsSystem";
 
 // ****************************************************************************
 // 										              Productos
