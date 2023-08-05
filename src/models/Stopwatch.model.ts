@@ -3,8 +3,8 @@ import { StopwatchFromDB } from "../types";
 
 const stopwatchSchema = new mongoose.Schema({
 	name: { type: String, required: true, trim: true },
-	timeDate: { type: Date },
-	accumulatedTime: { type: Number },
+	timeDate: { type: Number, default: null },
+	accumulatedTime: { type: Number, default: 0 },
 	timeSeted: { type: Number, default: 0 },
 });
 

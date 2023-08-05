@@ -11,7 +11,7 @@ import initSockets from "./sockets";
 	const server = http.createServer(app);
 	const httpServer = server.listen(PORT);
 
-	const io = new WebSocketServer(httpServer);
+	const io = new WebSocketServer(httpServer, { cors: { origin: "*" } });
 
 	await initSockets(io);
 

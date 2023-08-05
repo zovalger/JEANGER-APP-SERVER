@@ -8,7 +8,7 @@ import mongoose from "mongoose";
 
 export const getAllStopwatch_service = async (): Promise<StopwatchFromDB[]> => {
 	try {
-		const stopwatches = await StopwatchModel.find();
+		const stopwatches = await StopwatchModel.find().sort({ name: 1 });
 
 		return stopwatches;
 	} catch (error) {
@@ -24,8 +24,9 @@ export const getAllStopwatch_service = async (): Promise<StopwatchFromDB[]> => {
 export const createStopwatch_service = async (
 	data: Stopwatch
 ): Promise<StopwatchFromDB | undefined> => {
+	const { name } = data;
 	try {
-		const stopwatch = new StopwatchModel(data);
+		const stopwatch = new StopwatchModel({ name });
 
 		await stopwatch.save();
 

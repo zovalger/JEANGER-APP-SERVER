@@ -54,28 +54,23 @@ export interface ProductReferenceFromDB extends ProductReference, Document {
 export interface Stopwatch {
 	_id?: string;
 	name: string;
-	timeDate: Date;
+	timeDate: number;
 	accumulatedTime: number;
-	timeSeted: number;
+	timeSeted: number | null;
 }
 
 export interface StopwatchFromDB extends Document {
 	_id: mongoose.Types.ObjectId;
 }
 
-
-
 // ****************************************************************************
 // 										          sockets
 // ****************************************************************************
-
 
 // export enum CurrencyType {
 // 	USD = "USD",
 // 	BSF = "BSF",
 // }
-
-
 
 // export interface ServerToClientEvents {
 //   [StopwatchEvents.create]: () => void;
