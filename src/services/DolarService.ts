@@ -1,5 +1,6 @@
 import { DolarValue, DolarValueFromDB } from "../types";
 import DolarValueModel from "../models/DolarValue";
+import BCV_ForeignExchange from "../utils/BCV_ForeignExchange";
 
 // ****************************************************************************
 // 										              obtener
@@ -9,6 +10,17 @@ export const getDolar_service = async (): Promise<
 	DolarValueFromDB | DolarValue
 > => {
 	try {
+
+		const foreignExchange = await BCV_ForeignExchange();
+
+		if (foreignExchange != null) {
+			await createDolarValue({
+				value: foreignExchange.dolar,
+				date: new Date(),
+			});
+		}
+
+
 		const dolar =
 			(await DolarValueModel.findOne().sort({ date: -1 })) ||
 			(await getDolarFromBCV());
