@@ -4,6 +4,7 @@ import app from "./app";
 import { PORT } from "./config";
 import connectToMongoDB from "./db";
 import initSockets from "./sockets";
+import initTask from "./services/InitTask";
 
 (async () => {
 	await connectToMongoDB();
@@ -14,6 +15,8 @@ import initSockets from "./sockets";
 	const io = new WebSocketServer(httpServer, { cors: { origin: "*" } });
 
 	await initSockets(io);
+
+	await initTask();
 
 	// app.listen(PORT);
 })();

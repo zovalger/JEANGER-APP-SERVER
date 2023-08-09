@@ -10,7 +10,7 @@ export const getDolar_service = async (): Promise<
 > => {
 	try {
 		const dolar =
-			(await DolarValueModel.findOne().sort({ date: 1 })) ||
+			(await DolarValueModel.findOne().sort({ date: -1 })) ||
 			(await getDolarFromBCV());
 
 		return dolar;
@@ -22,4 +22,19 @@ export const getDolar_service = async (): Promise<
 
 export const getDolarFromBCV = async (): Promise<DolarValueFromDB> => {
 	return new DolarValueModel({});
+};
+
+export const createDolarValue = async (
+	data: DolarValue
+): Promise<DolarValueFromDB | null> => {
+	try {
+		const dolar = new DolarValueModel(data);
+
+		await dolar.save();
+
+		return dolar;
+	} catch (error) {
+		console.log(error);
+		return null;
+	}
 };
