@@ -4,7 +4,7 @@ import { getDolarFromBCV } from "./DolarService";
 // other funtions
 
 const updateDolarFromDCBPage = () =>
-	cron.schedule("0 9,15 * * *", async () => {
+	cron.schedule("5 9,16 * * *", async () => {
 		await getDolarFromBCV();
 	});
 
