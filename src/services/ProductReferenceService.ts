@@ -9,7 +9,7 @@ import {
 	getProduct_service,
 	updateCost_by_References_service,
 } from "./ProductService";
-import { getDolar_service } from "./DolarService";
+import { getLastDolar_service } from "./DolarService";
 import ProductModel from "../models/Product.model";
 
 // ****************************************************************************
@@ -109,7 +109,9 @@ export const getPosibleProductParents_By_ProductId_service = async (
 			const afterParent = await ProductReferenceModel.find({ childId: p });
 
 			afterParent.forEach((pr) => {
-				const found = noId.find((id) => id.toString() === pr.parentId.toString());
+				const found = noId.find(
+					(id) => id.toString() === pr.parentId.toString()
+				);
 
 				if (!found) noId.push(pr.parentId);
 			});
@@ -141,11 +143,12 @@ export const getCost_by_References_service = async (
 	productId: string | ObjectId
 ): Promise<number> => {
 	try {
-		const dolar = await getDolar_service();
+		const dolar = await getLastDolar_service();
 		const productReference = await getProductReference_by_ChildId_service(
 			productId
 		);
 
+		if (!dolar) return 0;
 		if (!productReference) return 0;
 
 		const cost = productReference.reduce(

@@ -3,38 +3,8 @@ import DolarValueModel from "../models/DolarValue";
 import BCV_ForeignExchange from "../utils/BCV_ForeignExchange";
 
 // ****************************************************************************
-// 										              obtener
+// 										              crear
 // ****************************************************************************
-
-export const getDolar_service = async (): Promise<
-	DolarValueFromDB | DolarValue
-> => {
-	try {
-
-		const foreignExchange = await BCV_ForeignExchange();
-
-		if (foreignExchange != null) {
-			await createDolarValue({
-				value: foreignExchange.dolar,
-				date: new Date(),
-			});
-		}
-
-
-		const dolar =
-			(await DolarValueModel.findOne().sort({ date: -1 })) ||
-			(await getDolarFromBCV());
-
-		return dolar;
-	} catch (error) {
-		console.log(error);
-		return { value: 0, date: new Date(1997) };
-	}
-};
-
-export const getDolarFromBCV = async (): Promise<DolarValueFromDB> => {
-	return new DolarValueModel({});
-};
 
 export const createDolarValue = async (
 	data: DolarValue
@@ -43,6 +13,41 @@ export const createDolarValue = async (
 		const dolar = new DolarValueModel(data);
 
 		await dolar.save();
+
+		return dolar;
+	} catch (error) {
+		console.log(error);
+		return null;
+	}
+};
+
+// ****************************************************************************
+// 										              obtener
+// ****************************************************************************
+
+export const getDolarFromBCV = async (): Promise<DolarValueFromDB | null> => {
+	try {
+		const foreignExchange = await BCV_ForeignExchange();
+
+		if (foreignExchange == null) return null;
+
+		const dolarValue = await createDolarValue({
+			value: foreignExchange.dolar,
+			date: new Date(),
+		});
+
+		return dolarValue;
+	} catch (error) {
+		console.log(error);
+		return new DolarValueModel({ value: -1, date: new Date() });
+	}
+};
+
+export const getLastDolar_service = async (): Promise<DolarValueFromDB | null> => {
+	try {
+		const dolar = await DolarValueModel.findOne().sort({ date: -1 });
+
+		if (!dolar) return await getDolarFromBCV();
 
 		return dolar;
 	} catch (error) {

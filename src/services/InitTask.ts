@@ -1,17 +1,10 @@
-import BCV_ForeignExchange from "../utils/BCV_ForeignExchange";
-import { createDolarValue } from "./DolarService";
+import { getDolarFromBCV } from "./DolarService";
+
 
 export default async function initTask(): Promise<void> {
 	// actualizacion de dolar
 	try {
-		const foreignExchange = await BCV_ForeignExchange();
-
-		if (foreignExchange != null) {
-			await createDolarValue({
-				value: foreignExchange.dolar,
-				date: new Date(),
-			});
-		}
+	 await	getDolarFromBCV()
 	} catch (error) {
 		console.log(error);
 	}

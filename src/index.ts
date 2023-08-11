@@ -5,6 +5,7 @@ import { PORT } from "./config";
 import connectToMongoDB from "./db";
 import initSockets from "./sockets";
 import initTask from "./services/InitTask";
+import backgroundTask from "./services/backgroundTask";
 
 (async () => {
 	await connectToMongoDB();
@@ -18,5 +19,5 @@ import initTask from "./services/InitTask";
 
 	await initTask();
 
-	// app.listen(PORT);
+	await backgroundTask();
 })();
