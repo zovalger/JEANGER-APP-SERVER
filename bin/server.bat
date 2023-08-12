@@ -1,6 +1,4 @@
-cd C:/
 
-start db.bat
 
 git pull
 
