@@ -5,6 +5,10 @@ const SocketEventsSystem = {
 	// personalizados
 };
 
+export const DolarEvent = {
+	update: "/dolar/update",
+};
+
 export const StopwatchEvents = {
 	sendUpdate: "/stopwatch/send_update",
 	create: "/stopwatch/create",

@@ -19,5 +19,5 @@ import backgroundTask from "./services/backgroundTask";
 
 	await initTask();
 
-	await backgroundTask();
+	await backgroundTask(io);
 })();
