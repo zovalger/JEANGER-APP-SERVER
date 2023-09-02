@@ -16,6 +16,7 @@ const productSchema = new mongoose.Schema({
 	keywords: { type: [String], required: true, trim: true },
 
 	priority: { type: Number, default: 0 },
+	favorite: { type: Boolean, default: false },
 });
 
 // actualizar el valor de las referecias

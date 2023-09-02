@@ -63,7 +63,7 @@ export const updateProducts_service = async (
 	_id: string,
 	data: Product
 ): Promise<ProductFromDB | undefined> => {
-	const { name, cost, currencyType, keywords, priority } = data;
+	const { name, cost, currencyType, keywords, priority,favorite } = data;
 
 	try {
 		const product = await ProductModel.findById(_id);
@@ -75,6 +75,7 @@ export const updateProducts_service = async (
 		product.keywords = keywords;
 		product.cost = cost;
 		product.priority = priority;
+		product.favorite = favorite;
 
 		await product.save();
 

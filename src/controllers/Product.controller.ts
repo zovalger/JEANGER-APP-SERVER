@@ -40,7 +40,8 @@ export const getProduct_controller = async (req: Request, res: Response) => {
 // ****************************************************************************
 
 export const createProduct_controller = async (req: Request, res: Response) => {
-	const { name, cost, currencyType, keywords, priority }: Product = req.body;
+	const { name, cost, currencyType, keywords, priority, favorite }: Product =
+		req.body;
 
 	try {
 		const product = await createProduct_service({
@@ -49,6 +50,7 @@ export const createProduct_controller = async (req: Request, res: Response) => {
 			currencyType,
 			keywords,
 			priority,
+			favorite,
 		});
 
 		return res.status(200).json(product);
@@ -67,7 +69,8 @@ export const updateProducts_controller = async (
 	res: Response
 ) => {
 	const { _id } = req.params;
-	const { name, cost, currencyType, keywords, priority }: Product = req.body;
+	const { name, cost, currencyType, keywords, priority, favorite }: Product =
+		req.body;
 
 	try {
 		const product = await updateProducts_service(_id, {
@@ -76,6 +79,7 @@ export const updateProducts_controller = async (
 			currencyType,
 			keywords,
 			priority,
+			favorite,
 		});
 
 		return res.status(200).json(product);

@@ -22,6 +22,7 @@ export interface Product {
 	currencyType: CurrencyType;
 	keywords: string[];
 	priority: number;
+	favorite: boolean;
 }
 
 export interface ProductFromDB extends Document, Product {
