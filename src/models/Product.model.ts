@@ -14,6 +14,8 @@ const productSchema = new mongoose.Schema({
 
 	// palabras clave para busqueda
 	keywords: { type: [String], required: true, trim: true },
+
+	priority: { type: Number, default: 0 },
 });
 
 // actualizar el valor de las referecias
