@@ -2,7 +2,7 @@ import express from "express";
 import {
 	createProductReference_controller,
 	deleteProductReference_controller,
-  updateProductReference_controller,
+	updateProductReference_controller,
 } from "../controllers/ProductReference.controller";
 
 const router = express.Router();

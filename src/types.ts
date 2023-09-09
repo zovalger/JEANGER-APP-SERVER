@@ -50,6 +50,18 @@ export interface ProductReferenceFromDB extends ProductReference, Document {
 }
 
 // ****************************************************************************
+// 										          productos: Settings
+// ****************************************************************************
+
+export interface ProductSettings {
+	stopwatchProductId: mongoose.Types.ObjectId | null;
+}
+
+export interface ProductSettingsFromDB extends ProductSettings, Document {
+	_id: mongoose.Types.ObjectId;
+}
+
+// ****************************************************************************
 // 										          Cronometros
 // ****************************************************************************
 
