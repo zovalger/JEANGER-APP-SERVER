@@ -5,7 +5,7 @@ const SocketEventsSystem = {
 	// personalizados
 };
 
-export const DolarEvent = {
+export const ForeignExchangeEvent = {
 	update: "/dolar/update",
 };
 

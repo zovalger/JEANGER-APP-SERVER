@@ -1,17 +1,17 @@
 import cron from "node-cron";
-import { getDolarFromBCV } from "./DolarService";
+import { getForeignExchangeFromBCV } from "./ForeignExchangeService";
 import { Server } from "socket.io";
-import { DolarEvent } from "../config/SocketEventsSystem";
+import { ForeignExchangeEvent } from "../config/SocketEventsSystem";
 
 // other funtions
 
 const updateDolarFromDCBPage = (io: Server) =>
 	cron.schedule("2 9,16 * * *", async () => {
-		const dolar = await getDolarFromBCV();
+		const dolar = await getForeignExchangeFromBCV();
 
 		if (!dolar) return;
 
-		io.emit(DolarEvent.update, dolar);
+		io.emit(ForeignExchangeEvent.update, dolar);
 
 		return;
 	});

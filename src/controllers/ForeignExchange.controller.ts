@@ -1,14 +1,14 @@
 import { Request, Response } from "express";
 
-import { getLastDolar_service } from "../services/DolarService";
+import { getLastForeignExchange_service } from "../services/ForeignExchangeService";
 
 // ****************************************************************************
 // 										              obtener
 // ****************************************************************************
 
-export const getDolar_controller = async (_req: Request, res: Response) => {
+export const getForeignExchange_controller = async (_req: Request, res: Response) => {
 	try {
-		const Dolar = await getLastDolar_service();
+		const Dolar = await getLastForeignExchange_service();
 
 		return res.status(200).json(Dolar);
 	} catch (error) {

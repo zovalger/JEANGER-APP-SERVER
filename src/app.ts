@@ -12,7 +12,7 @@ import { NODE_ENV } from "./config";
 // 										              Endpoints
 // ****************************************************************************
 
-import DolarRouter from "./routes/Dolar.route";
+import DolarRouter from "./routes/ForeignExchange.route";
 import StopwatchRouter from "./routes/Stopwatch.route";
 import ProductRouter from "./routes/Product.route";
 import ProductReferencesRouter from "./routes/ProductReference.route";
@@ -43,7 +43,7 @@ app.use(
 // 										              Endpoints api
 // ****************************************************************************
 
-app.use("/api/dolar", DolarRouter);
+app.use("/api/foreign_exchange", DolarRouter);
 app.use("/api/stopwatch", StopwatchRouter);
 app.use("/api/product", ProductRouter);
 app.use("/api/product/reference", ProductReferencesRouter);

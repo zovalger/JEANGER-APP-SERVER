@@ -8,12 +8,13 @@ export enum CurrencyType {
 	USD = "USD",
 	BSF = "BSF",
 }
-export interface DolarValue {
-	value: number;
+export interface ForeignExchange {
+	euro: number;
+	dolar: number;
 	date: Date;
 }
 
-export interface DolarValueFromDB extends Document, DolarValue {}
+export interface ForeignExchangeFromDB extends Document, ForeignExchange {}
 
 export interface Product {
 	_id?: string;
@@ -28,7 +29,7 @@ export interface Product {
 export interface ProductFromDB extends Document, Product {
 	_id: string;
 	updateCostReferences(): void;
-	updateMyCost(dolarValue: DolarValue): number;
+	updateMyCost(foreignExchange: ForeignExchange): number;
 }
 
 // ****************************************************************************

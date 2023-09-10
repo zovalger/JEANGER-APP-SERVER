@@ -1,8 +1,11 @@
 import axios from "axios";
 import cheerio from "cheerio";
 import toUpperCamelCase from "./strUpperCamelCase";
+import { ForeignExchange } from "../types";
 
-export default async function BCV_ForeignExchange() {
+export default async function BCV_ForeignExchange(): Promise<
+	Omit<ForeignExchange, "date">
+> {
 	const url = `https://www.bcv.org.ve/`;
 
 	let config = {
@@ -27,19 +30,21 @@ export default async function BCV_ForeignExchange() {
 		//   "dolar"
 		// ]
 
-		const dolar = toUpperCamelCase($(`#dolar`).text());
-
-		const d = dolar.split(" ");
+		const dolar = parseFloat(
+			toUpperCamelCase($(`#dolar`).text()).split(" ")[1].replace(",", ".")
+		);
+		const euro = parseFloat(
+			toUpperCamelCase($(`#euro`).text()).split(" ")[1].replace(",", ".")
+		);
 
 		const foreignExchange = {
-			dolar: parseFloat(d[1].replace(",", ".")),
+			dolar,
+			euro,
 		};
-
-		console.log(foreignExchange);
 
 		return foreignExchange;
 	} catch (error) {
 		console.log(error);
-		return null;
+		throw new Error("error al obtener divisas");
 	}
 }

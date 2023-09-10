@@ -9,7 +9,7 @@ import {
 	getProduct_service,
 	updateCost_by_References_service,
 } from "./ProductService";
-import { getLastDolar_service } from "./DolarService";
+import { getLastForeignExchange_service } from "./ForeignExchangeService";
 import ProductModel from "../models/Product.model";
 
 // ****************************************************************************
@@ -143,12 +143,12 @@ export const getCost_by_References_service = async (
 	productId: string | ObjectId
 ): Promise<number> => {
 	try {
-		const dolar = await getLastDolar_service();
+		const foreignExchange = await getLastForeignExchange_service();
 		const productReference = await getProductReference_by_ChildId_service(
 			productId
 		);
 
-		if (!dolar) return 0;
+		if (!foreignExchange) return 0;
 		if (!productReference) return 0;
 
 		const cost = productReference.reduce(
@@ -157,7 +157,8 @@ export const getCost_by_References_service = async (
 
 				let toSum = cost * percentage * amount;
 
-				if (currencyType == CurrencyType.BSF) toSum = toSum / dolar.value;
+				if (currencyType == CurrencyType.BSF)
+					toSum = toSum / foreignExchange.dolar;
 
 				console.log(reference, toSum);
 

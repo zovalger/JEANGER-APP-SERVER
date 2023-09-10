@@ -1,10 +1,9 @@
-import { getDolarFromBCV } from "./DolarService";
-
+import { getForeignExchangeFromBCV } from "./ForeignExchangeService";
 
 export default async function initTask(): Promise<void> {
 	// actualizacion de dolar
 	try {
-	 await	getDolarFromBCV()
+		await getForeignExchangeFromBCV();
 	} catch (error) {
 		console.log(error);
 	}
