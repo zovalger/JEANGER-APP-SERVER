@@ -18,6 +18,9 @@ import ProductRouter from "./routes/Product.route";
 import ProductReferencesRouter from "./routes/ProductReference.route";
 import ProductSettingsRouter from "./routes/ProductSettings.route";
 import BillRouter from "./routes/Bill.route";
+import UtilityRouter from "./routes/Utility.route";
+
+
 
 // ****************************************************************************
 // 										           Inicio de App
@@ -50,6 +53,8 @@ app.use("/api/product", ProductRouter);
 app.use("/api/product/reference", ProductReferencesRouter);
 app.use("/api/product_settings", ProductSettingsRouter);
 app.use("/api/bill", BillRouter);
+app.use("/api/utility", UtilityRouter);
+
 
 app.use("/uploads", express.static(path.join(path.resolve(), "/uploads")));
 
