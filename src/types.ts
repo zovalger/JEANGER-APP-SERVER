@@ -79,8 +79,28 @@ export interface StopwatchFromDB extends Document {
 }
 
 // ****************************************************************************
-// 										          sockets
+// 										          bills
 // ****************************************************************************
+
+export interface BillItem {
+	productId: string;
+	quantity: number;
+	cost: number;
+	currencyType: CurrencyType;
+}
+
+export interface BillTotals {
+	BSF: number;
+	USD: number;
+}
+
+export interface Bill {
+	_id: string;
+	date: Date;
+	items: BillItem[];
+	foreignExchange: ForeignExchange;
+	totals: BillTotals;
+}
 
 // export enum CurrencyType {
 // 	USD = "USD",
