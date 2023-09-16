@@ -95,24 +95,17 @@ export interface BillTotals {
 }
 
 export interface Bill {
-	_id: string;
+	name: string;
 	date: Date;
 	items: BillItem[];
 	foreignExchange: ForeignExchange;
 	totals: BillTotals;
 }
 
-// export enum CurrencyType {
-// 	USD = "USD",
-// 	BSF = "BSF",
-// }
+export interface BillFromSocket extends Bill {
+	_id: string;
+}
 
-// export interface ServerToClientEvents {
-//   [StopwatchEvents.create]: () => void;
-//   basicEmit: (a: number, b: string, c: Buffer) => void;
-//   withAck: (d: string, callback: (e: number) => void) => void;
-// }
-
-// interface ClientToServerEvents {
-//   hello: () => void;
-// }
+export interface BillFromDB extends Bill, Document {
+	_id: mongoose.Types.ObjectId;
+}

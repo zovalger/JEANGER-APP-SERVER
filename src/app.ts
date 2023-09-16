@@ -17,6 +17,7 @@ import StopwatchRouter from "./routes/Stopwatch.route";
 import ProductRouter from "./routes/Product.route";
 import ProductReferencesRouter from "./routes/ProductReference.route";
 import ProductSettingsRouter from "./routes/ProductSettings.route";
+import BillRouter from "./routes/Bill.route";
 
 // ****************************************************************************
 // 										           Inicio de App
@@ -48,6 +49,7 @@ app.use("/api/stopwatch", StopwatchRouter);
 app.use("/api/product", ProductRouter);
 app.use("/api/product/reference", ProductReferencesRouter);
 app.use("/api/product_settings", ProductSettingsRouter);
+app.use("/api/bill", BillRouter);
 
 app.use("/uploads", express.static(path.join(path.resolve(), "/uploads")));
 

@@ -1,13 +1,28 @@
 import { Server, Socket } from "socket.io";
 import { BillEvents } from "../config/SocketEventsSystem";
-import { Bill } from "../types";
+import { BillFromSocket } from "../types";
+import {
+	createBill_service,
+	deleteBill_service,
+	updateBills_service,
+} from "../services/BillService";
 
-const BillSocket = (_io: Server, socket: Socket) => {
+const BillSocket = (io: Server, socket: Socket) => {
 	// recibir dato para crear nuevo reloj
-	socket.on(BillEvents.send, async (data: Bill) => {
-		// const bill = await createStopwatch_service(data);
+	socket.on(BillEvents.send, async (data: BillFromSocket) => {
+		const { _id } = data;
 
-		socket.broadcast.emit(BillEvents.send, data);
+		let billSaved = _id
+			? await updateBills_service(_id, data)
+			: await createBill_service(data);
+
+		io.emit(BillEvents.send, { data: billSaved, oldId: _id });
+	});
+
+	socket.on(BillEvents.delete, async (_id: string) => {
+		await deleteBill_service(_id);
+
+		io.emit(BillEvents.delete, _id);
 	});
 };
 
