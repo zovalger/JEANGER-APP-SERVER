@@ -109,3 +109,13 @@ export interface BillFromSocket extends Bill {
 export interface BillFromDB extends Bill, Document {
 	_id: mongoose.Types.ObjectId;
 }
+
+// ****************************************************************************
+// 										          res Movilnet
+// ****************************************************************************
+
+export interface saldoMovilnet {
+	saldo: string;
+	status: string;
+	date: string;
+}
