@@ -7,7 +7,7 @@ import BCV_ForeignExchange from "../utils/BCV_ForeignExchange";
 // 										              crear
 // ****************************************************************************
 
-export const createForeignExchange = async (
+export const createForeignExchange_service = async (
 	data: ForeignExchange
 ): Promise<ForeignExchangeFromDB | null> => {
 	try {
@@ -33,7 +33,7 @@ export const getForeignExchangeFromBCV =
 
 			if (foreignExchangeFromBCV == null) return null;
 
-			const foreignExchange = await createForeignExchange({
+			const foreignExchange = await createForeignExchange_service({
 				dolar: foreignExchangeFromBCV.dolar,
 				euro: foreignExchangeFromBCV.euro,
 				date: new Date(),
