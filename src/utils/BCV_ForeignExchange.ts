@@ -1,3 +1,4 @@
+import https from "https";
 import axios from "axios";
 import cheerio from "cheerio";
 import toUpperCamelCase from "./strUpperCamelCase";
@@ -8,11 +9,16 @@ export default async function BCV_ForeignExchange(): Promise<
 > {
 	const url = `https://www.bcv.org.ve/`;
 
+	const agent = new https.Agent({
+		rejectUnauthorized: false,
+	});
+
 	let config = {
 		method: "get",
 		maxBodyLength: Infinity,
 		url,
 		headers: {},
+		httpsAgent: agent,
 	};
 
 	try {
