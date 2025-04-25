@@ -7,11 +7,13 @@ import mongoose, { Document } from "mongoose";
 export enum CurrencyType {
 	USD = "USD",
 	BSF = "BSF",
+	EUR = "EUR",
 }
 export interface ForeignExchange {
 	euro: number;
 	dolar: number;
 	date: Date;
+	bankBusinessDate: Date;
 }
 
 export interface ForeignExchangeFromDB extends Document, ForeignExchange {}

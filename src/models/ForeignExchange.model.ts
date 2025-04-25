@@ -5,9 +5,10 @@ const ForeignExchangeSchema = new mongoose.Schema({
 	date: { type: Date, default: new Date() },
 	dolar: Number,
 	euro: Number,
+	bankBusinessDate: Date,
 });
 
 export default mongoose.model<ForeignExchangeFromDB>(
-	"DolarValue",
+	"ForeignExchange",
 	ForeignExchangeSchema
 );

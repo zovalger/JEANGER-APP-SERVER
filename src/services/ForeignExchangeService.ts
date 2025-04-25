@@ -34,8 +34,7 @@ export const getForeignExchangeFromBCV =
 			if (foreignExchangeFromBCV == null) return null;
 
 			const foreignExchange = await createForeignExchange_service({
-				dolar: foreignExchangeFromBCV.dolar,
-				euro: foreignExchangeFromBCV.euro,
+				...foreignExchangeFromBCV,
 				date: new Date(),
 			});
 

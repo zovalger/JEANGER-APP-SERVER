@@ -155,7 +155,10 @@ export const getCost_by_References_service = async (
 			(total: number, reference: ProductReference) => {
 				const { cost, currencyType, amount, percentage } = reference;
 
+				//! si es euro y dolar se van a multiplicar mal
 				let toSum = cost * percentage * amount;
+
+				//todo: usar el bs como intermediario para calcular el costo de dolar a euro
 
 				if (currencyType == CurrencyType.BSF)
 					toSum = toSum / foreignExchange.dolar;

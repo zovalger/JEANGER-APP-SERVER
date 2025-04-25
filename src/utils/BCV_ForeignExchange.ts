@@ -43,9 +43,16 @@ export default async function BCV_ForeignExchange(): Promise<
 			toUpperCamelCase($(`#euro`).text()).split(" ")[1].replace(",", ".")
 		);
 
+		const fecha = $(
+			`.view-id-tipo_de_cambio_oficial_del_bcv .date-display-single`
+		).attr("content");
+
+		if (!dolar || !euro || !fecha) throw new Error("error al obtener divisas");
+
 		const foreignExchange = {
 			dolar,
 			euro,
+			bankBusinessDate: new Date(fecha),
 		};
 
 		return foreignExchange;
