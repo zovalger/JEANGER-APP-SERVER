@@ -63,7 +63,7 @@ export const updateProducts_service = async (
 	_id: string,
 	data: Product
 ): Promise<ProductFromDB | undefined> => {
-	const { name, cost, currencyType, keywords, priority,favorite } = data;
+	const { name, cost, currencyType, keywords, priority, favorite } = data;
 
 	try {
 		const product = await ProductModel.findById(_id);
@@ -103,7 +103,7 @@ export const updateCost_by_References_service = async (
 		}
 
 		product.cost =
-			(await getCost_by_References_service(productId)) || product.cost;
+			(await getCost_by_References_service(product)) || product.cost;
 
 		await product.save();
 

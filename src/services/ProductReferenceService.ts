@@ -2,6 +2,7 @@ import { ObjectId } from "mongoose";
 import ProductReferenceModel from "../models/ProductReference.model";
 import {
 	CurrencyType,
+	ProductFromDB,
 	ProductReference,
 	ProductReferenceFromDB,
 } from "../types";
@@ -139,26 +140,28 @@ export const getProductReference_by_ChildId_service = async (
 	}
 };
 
-export const getCost_by_References_service = async (
-	productId: string | ObjectId
-): Promise<number> => {
+// devuelve el monto en dolares
+export const getCost_by_References_service = async ({
+	_id: productId,
+	currencyType: currencyTypeProd,
+}: ProductFromDB): Promise<number> => {
 	try {
 		const foreignExchange = await getLastForeignExchange_service();
-		const productReference = await getProductReference_by_ChildId_service(
+		const productReferences = await getProductReference_by_ChildId_service(
 			productId
 		);
 
 		if (!foreignExchange) return 0;
-		if (!productReference) return 0;
+		if (!productReferences) return 0;
 
-		const cost = productReference.reduce(
+		const costInDolar = productReferences.reduce(
 			(total: number, reference: ProductReference) => {
 				const { cost, currencyType, amount, percentage } = reference;
 
-				//! si es euro y dolar se van a multiplicar mal
 				let toSum = cost * percentage * amount;
 
-				//todo: usar el bs como intermediario para calcular el costo de dolar a euro
+				if (currencyType == CurrencyType.EUR)
+					toSum = (toSum * foreignExchange.euro) / foreignExchange.dolar;
 
 				if (currencyType == CurrencyType.BSF)
 					toSum = toSum / foreignExchange.dolar;
@@ -170,9 +173,14 @@ export const getCost_by_References_service = async (
 			0
 		);
 
-		console.log("total", cost);
+		const costInCurrencyType =
+			currencyTypeProd == CurrencyType.EUR
+				? (costInDolar * foreignExchange.dolar) / foreignExchange.euro
+				: currencyTypeProd == CurrencyType.BSF
+				? costInDolar * foreignExchange.dolar
+				: costInDolar;
 
-		return cost;
+		return costInCurrencyType;
 	} catch (error) {
 		console.log();
 		return 0;
