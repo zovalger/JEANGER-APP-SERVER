@@ -6,15 +6,32 @@ import {
 	deleteBill_service,
 	updateBills_service,
 } from "../services/BillService";
+import { isValidObjectId } from "mongoose";
+
+// is uuid
+const isUUID = new RegExp(
+	/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/
+);
+
+// const ismongoID = new RegExp(/^[0-9a-fA-F]{24}$/);
 
 const BillSocket = (io: Server, socket: Socket) => {
 	// recibir dato para crear nuevo reloj
 	socket.on(BillEvents.send, async (data: BillFromSocket) => {
 		const { _id } = data;
 
-		let billSaved = _id
-			? await updateBills_service(_id, data)
-			: await createBill_service(data);
+		const newData = { ...data };
+
+		let billSaved = null;
+
+		if (isUUID.test(_id) || !_id) {
+			newData._id = "";
+			billSaved = await createBill_service({ ...data });
+		}
+
+		if (isValidObjectId(_id)) {
+			billSaved = await updateBills_service(_id, data);
+		}
 
 		io.emit(BillEvents.send, { data: billSaved, oldId: _id });
 	});
