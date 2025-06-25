@@ -1,0 +1,61 @@
+{
+  "name": "jeanger-app-server",
+  "version": "1.0.0",
+  "description": "\"# JEANGER-APP-SERVER\"",
+  "main": "index.js",
+  "scripts": {
+    "start": "node build/index.js",
+    "dev": "ts-node-dev src/index.ts",
+    "_lint": "ts-standard",
+    "build": "tsc",
+    "tsc": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zovalger/JEANGER-APP-SERVER.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zovalger/JEANGER-APP-SERVER/issues"
+  },
+  "homepage": "https://github.com/zovalger/JEANGER-APP-SERVER#readme",
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.3",
+    "@types/cors": "^2.8.13",
+    "@types/express": "^4.17.17",
+    "@types/express-fileupload": "^1.4.1",
+    "@types/mongoose": "^5.11.97",
+    "@types/morgan": "^1.9.4",
+    "ts-node-dev": "^2.0.0",
+    "ts-standard": "^12.0.2",
+    "typescript": "5.1.6"
+  },
+  "dependencies": {
+    "@types/node-cron": "^3.0.8",
+    "axios": "^1.4.0",
+    "cheerio": "^1.0.0-rc.12",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "4.18.2",
+    "express-fileupload": "^1.4.0",
+    "express-validator": "^7.0.1",
+    "http-errors": "^2.0.0",
+    "mongoose": "^7.3.2",
+    "morgan": "^1.10.0",
+    "node-cron": "^3.0.2",
+    "path": "^0.12.7",
+    "socket.io": "^4.7.1"
+  },
+  "_eslintConfig": {
+    "parserOptions": {
+      "project": "./tsconfig.json"
+    },
+    "extends": [
+      "./node_modules/ts-standard/eslintrc.json"
+    ]
+  }
+}
