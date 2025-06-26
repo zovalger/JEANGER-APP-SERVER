@@ -28,6 +28,7 @@ export default class Messages {
 		internal: () => "Error en el servidor",
 		duplicate: () => "Ya existe un registro con esos datos",
 		invalidCredentials: () => "usuario/Contraseña incorrecta",
+		withoutPermission: () => "not have required permission",
 		notToken: () => "token no encontrado",
 		defeatedToken: () => "token vencido",
 		whenObtaining: (item: ModuleItems) => `error al intentar obtener ${item}`,
