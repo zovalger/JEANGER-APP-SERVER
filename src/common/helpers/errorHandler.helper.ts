@@ -1,5 +1,5 @@
 import { Response } from "express";
-import Messages from "../classes/Messages";
+import { Messages } from "../classes/Messages";
 
 export const errorHandlerHelper = async (error: any, res: Response) => {
 	console.log(error);

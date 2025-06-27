@@ -1,7 +1,7 @@
 import http from "http";
 // import { Server as WebSocketServer } from "socket.io";
 import app from "./app";
-import { PORT } from "./config";
+import { PORT } from "./common/config";
 import connectToMongoDB from "./common/db";
 // import { createUser_service } from "./auth/user.service";
 // import { UserPermissions } from "./auth/enum/user-permissions.enum";

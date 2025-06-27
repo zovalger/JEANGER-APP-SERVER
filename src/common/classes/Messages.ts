@@ -7,7 +7,7 @@ export enum ModuleItems {
 	stopwatch = "cronometro",
 }
 
-export default class Messages {
+export class Messages {
 	static success = {
 		created: (item: ModuleItems) => `El/La ${item} fue creado correctamente`,
 		updated: (item: ModuleItems) =>

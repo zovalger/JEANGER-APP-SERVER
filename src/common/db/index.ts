@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
-import { MONGODB_URI } from "../../config";
+import { MONGODB_URI } from "../config";
 
 // Función para conectar a MongoDB
-const connectToMongoDB = async () => {
+export const connectToMongoDB = async () => {
 	try {
 		await mongoose.connect(MONGODB_URI, {
 			// useNewUrlParser: true,
@@ -18,5 +18,3 @@ const connectToMongoDB = async () => {
 		await connectToMongoDB();
 	}
 };
-
-export default connectToMongoDB;

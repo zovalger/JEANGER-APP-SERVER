@@ -1,21 +1,10 @@
 import { Router } from "express";
-import createHttpError from "http-errors";
+import Api_v2 from "./api-v2.routes";
+import defaultRoutes from "../common/routes/default.routes";
 
-const defaultRoutes = Router();
+const routes = Router();
 
-defaultRoutes.use("/", (_req, res) => {
-	res.status(200).send("API is running....");
-});
+routes.use("/api/v2", Api_v2);
+routes.use(defaultRoutes);
 
-// catch 404 and forward to error handler
-defaultRoutes.use((_req, _res, next) => next(createHttpError(404)));
-
-defaultRoutes.use((err: any, req: any, res: any) => {
-	res.locals.message = err.message;
-	res.locals.error = req.app.get("env") === "development" ? err : {};
-
-	res.status(err.status || 500);
-	res.json({ error: err });
-});
-
-export default defaultRoutes;
+export default routes;
