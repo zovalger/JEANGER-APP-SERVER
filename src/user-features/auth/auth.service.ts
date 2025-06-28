@@ -1,52 +1,26 @@
-import jwt from "jsonwebtoken";
-import { config, HttpErrors, Messages } from "../../common/common.module";
-import { UserModule } from "../user-features.module";
-import { ISessionTokenFromDBDto, LoginDto } from "./dto";
-import { SessionTokenModel } from "./models";
+import { Injectable } from '@nestjs/common';
+import { CreateAuthDto } from './dto/create-auth.dto';
+import { UpdateAuthDto } from './dto/update-auth.dto';
 
-export const verifyCredentials_service = async (
-	loginDto: LoginDto
-): Promise<ISessionTokenFromDBDto> => {
-	const { email, password } = loginDto;
+@Injectable()
+export class AuthService {
+  create(createAuthDto: CreateAuthDto) {
+    return 'This action adds a new auth';
+  }
 
-	const user = await UserModule.UserService.get_User_by_email_service(email);
+  findAll() {
+    return `This action returns all auth`;
+  }
 
-	if (!user)
-		throw new HttpErrors.NotFoundException(Messages.error.invalidCredentials());
+  findOne(id: number) {
+    return `This action returns a #${id} auth`;
+  }
 
-	if (user.email != config.ADMIN_EMAIL) {
-		const matchPassword = await (
-			user as UserModule.dto.UserFromDBDto
-		).comparePassword(password);
+  update(id: number, updateAuthDto: UpdateAuthDto) {
+    return `This action updates a #${id} auth`;
+  }
 
-		if (!matchPassword)
-			throw new HttpErrors.BadRequestException(
-				Messages.error.invalidCredentials()
-			);
-	} else if (password != config.ADMIN_PASSWORD) {
-		// todo: enviar correo de notificacion de inicio de sesion de usuario root
-		throw new HttpErrors.BadRequestException(
-			Messages.error.invalidCredentials()
-		);
-	}
-	const token = jwt.sign({ _id: user._id }, config.SECRET_WORD, {
-		expiresIn: 86400, // 24 hours
-	});
-
-	const session = await new SessionTokenModel({ token }).save();
-
-	return session;
-};
-
-export const findToken_service = async (
-	token: string
-): Promise<ISessionTokenFromDBDto> => {
-	const sesionToken = await SessionTokenModel.findOne({ token });
-
-	if (!sesionToken)
-		throw new HttpErrors.BadRequestException(
-			Messages.error.invalidCredentials()
-		);
-
-	return sesionToken;
-};
+  remove(id: number) {
+    return `This action removes a #${id} auth`;
+  }
+}

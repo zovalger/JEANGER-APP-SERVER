@@ -1,5 +1,12 @@
-export * as dto from "./dto";
-export * as ENUMS from "./enum";
-export * as interfaces from "./interfaces";
-export * as UserService from "./user.service";
-export { UserRouter } from "./user.routes";
+import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+import { UserService } from './user.service';
+import { UserController } from './user.controller';
+import { UserModel } from './models/user.model';
+
+@Module({
+  imports: [MongooseModule.forFeature([UserModel])],
+  controllers: [UserController],
+  providers: [UserService],
+})
+export class UserModule {}

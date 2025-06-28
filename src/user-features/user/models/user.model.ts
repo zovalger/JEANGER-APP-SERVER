@@ -1,34 +1,23 @@
-import mongoose from "mongoose";
-import bcrypt from "bcrypt";
-import { UserPermissions } from "../enum/user-permissions.enum";
-import { UserFromDBDto } from "../dto/user-from-db.dto";
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument } from 'mongoose';
 
-const UserSchema = new mongoose.Schema(
-	{
-		email: { type: String, trim: true, require: true, unique: true },
-		password: { type: String, require: true, default: "" },
-		permissions: [{ type: String, enum: UserPermissions }],
-	},
-	{ timestamps: true }
-);
+export type UserDocument = HydratedDocument<User>;
 
-UserSchema.pre("save", async function (next) {
-	const user = this;
+@Schema({ timestamps: true })
+export class User {
+  @Prop()
+  age: number;
 
-	if (!user.isModified("password")) next();
+  @Prop()
+  breed: string;
 
-	const salt = await bcrypt.genSalt(10);
-	const hash = await bcrypt.hash(user.password, salt);
+  @Prop()
+  createdAt: Date;
 
-	user.password = hash;
+  @Prop()
+  updatedAt: Date;
+}
 
-	next();
-});
+export const UserSchema = SchemaFactory.createForClass(User);
 
-UserSchema.methods.comparePassword = async function (passwordReceived: string) {
-	return await bcrypt.compare(passwordReceived, this.password);
-};
-
-const UserModel = mongoose.model<UserFromDBDto>("User", UserSchema);
-
-export { UserModel };
+export const UserModel = { name: User.name, schema: UserSchema };

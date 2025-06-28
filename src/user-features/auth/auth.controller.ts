@@ -1,28 +1,34 @@
-import { Request, Response } from "express";
-import { matchedData } from "express-validator";
-import { LoginDto } from "./dto";
-import { verifyCredentials_service } from "./auth.service";
-import { errorHandlerHelper } from "../../common/common.module";
+import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { CreateAuthDto } from './dto/create-auth.dto';
+import { UpdateAuthDto } from './dto/update-auth.dto';
 
-export const signin_user_controller = async (req: Request, res: Response) => {
-	const loginDto = matchedData(req) as LoginDto;
+@Controller('auth')
+export class AuthController {
+  constructor(private readonly authService: AuthService) {}
 
-	try {
-		// const user = await get_User_by_email_service(email);
+  @Post()
+  create(@Body() createAuthDto: CreateAuthDto) {
+    return this.authService.create(createAuthDto);
+  }
 
-		const token = await verifyCredentials_service(loginDto);
+  @Get()
+  findAll() {
+    return this.authService.findAll();
+  }
 
-		// await createSystemLog_service({
-		// 	systemAction: SystemAction.login,
-		// 	moduleItem: moduleItems.user,
-		// 	// itemId: user._id,
-		// 	// text: user.email,
-		// 	userId: user._id.toString(),
-		// 	userEmail: email,
-		// });
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.authService.findOne(+id);
+  }
 
-		res.status(200).json({ token });
-	} catch (error) {
-		errorHandlerHelper(error, res);
-	}
-};
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
+    return this.authService.update(+id, updateAuthDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.authService.remove(+id);
+  }
+}

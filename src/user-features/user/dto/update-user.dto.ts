@@ -1,4 +1,4 @@
-import { CreateUserDto } from "./create-user.dto";
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateUserDto } from './create-user.dto';
 
-export interface UpdateUserDto
-	extends Partial<Omit<CreateUserDto, "_id" | "createdAt" | "updatedAt">> {}
+export class UpdateUserDto extends PartialType(CreateUserDto) {}
