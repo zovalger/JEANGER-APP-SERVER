@@ -5,7 +5,7 @@ import { UserController } from './user.controller';
 import { UserModel } from './models/user.model';
 
 @Module({
-  imports: [MongooseModule.forFeature([UserModel])],
+  imports: [MongooseModule.forFeatureAsync([UserModel])],
   controllers: [UserController],
   providers: [UserService],
 })
