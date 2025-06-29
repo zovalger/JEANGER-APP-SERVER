@@ -3,8 +3,14 @@ export const EnvConfiguration = () => ({
   port: process.env.PORT ? +process.env.PORT : 5000,
 
   jwt_secret: process.env.JWT_SECRET,
-  jwt_expire_time: process.env.JWT_EXPIRE_TIME || '2h',
-  jwt_refresh_expire_time: process.env.JWT_REFRESH_EXPIRE_TIME || '3d',
+
+  jwt_expire_time:
+    (process.env.JWT_EXPIRE_TIME ? process.env.JWT_EXPIRE_TIME : 0) || 7200000,
+
+  jwt_refresh_expire_time:
+    (process.env.JWT_REFRESH_EXPIRE_TIME
+      ? process.env.JWT_REFRESH_EXPIRE_TIME
+      : 0) || 259200000,
 
   mongodb_uri: process.env.MONGODB_URI || 'mongodb://localhost/nest',
 

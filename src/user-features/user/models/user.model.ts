@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import * as bcrypt from 'bcrypt';
-
 import { UserPermissions } from '../enum';
 
 export type UserDocument = HydratedDocument<User>;
@@ -47,10 +46,10 @@ export const UserModel = {
       next();
     });
 
-    schema.methods.comparePassword = async function (passwordReceived: string) {
+    schema.methods.comparePassword = function (passwordReceived: string) {
       const user = this as UserDocument;
 
-      return await bcrypt.compare(passwordReceived, user.password);
+      return bcrypt.compareSync(passwordReceived, user.password);
     };
 
     return schema;
