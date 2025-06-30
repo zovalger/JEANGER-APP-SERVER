@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
-import { META_PERMISSIONS } from '../../decorators/role-protected.decorator';
+import { META_PERMISSIONS } from '../../decorators/permission-protected.decorator';
 import { CustomRequest } from '../../interface/custom-request.interface';
 import { User } from 'src/user-features/user/models/user.model';
 
@@ -28,7 +28,7 @@ export class UserPermissionsGuard implements CanActivate {
 
     const req: CustomRequest = context.switchToHttp().getRequest();
 
-    const user = req.user as User;
+    const user = req.user?.data as User;
 
     if (!user) throw new BadRequestException('User not found');
 

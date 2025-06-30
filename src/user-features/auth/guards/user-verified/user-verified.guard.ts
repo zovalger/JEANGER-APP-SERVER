@@ -26,7 +26,7 @@ export class UserVerifiedGuard implements CanActivate {
 
     const req: CustomRequest = context.switchToHttp().getRequest();
 
-    const user = req.user as User;
+    const user = req.user?.data as User;
 
     if (!user)
       throw new BadRequestException(Messages.error.notFound(ModuleItems.user));

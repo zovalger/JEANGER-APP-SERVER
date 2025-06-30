@@ -10,10 +10,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Messages } from 'src/common/providers/Messages';
 import { JwtPayload } from './interface';
-import { SessionToken } from './models/session-token.model';
+import {
+  SessionToken,
+  SessionTokenDocument,
+} from './models/session-token.model';
 import { TokenTypes } from './enum';
 import { UserService } from '../user/user.service';
 import { ConfigService } from '@nestjs/config';
+import { UserDocument } from '../user/models/user.model';
 
 @Injectable()
 export class AuthService {
@@ -60,8 +64,11 @@ export class AuthService {
     return sessionToken;
   }
 
-  logout(userId: string) {
-    return `This action removes a #${userId} auth`;
+  async logout(user: UserDocument, sessionToken: SessionTokenDocument) {
+    await this.sessionTokenModel.deleteOne({
+      userId: user._id,
+      _id: sessionToken._id,
+    });
   }
 
   // async profile(user: User) {
@@ -82,9 +89,11 @@ export class AuthService {
     const sessionToken = await this.findById(id);
 
     if (sessionToken.expiration.getTime() < Date.now())
-      throw new UnauthorizedException("The user isn't active");
+      throw new UnauthorizedException(Messages.error.defeatedToken());
 
-    return this.userService.findOne(sessionToken.userId.toString());
+    const user = await this.userService.findOne(sessionToken.userId.toString());
+
+    return { data: user, sessionToken };
   }
 
   private getJwtToken(jwtPayload: JwtPayload, tokenType: TokenTypes) {

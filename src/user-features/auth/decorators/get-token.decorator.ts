@@ -3,10 +3,10 @@ import {
   InternalServerErrorException,
   createParamDecorator,
 } from '@nestjs/common';
-import { User } from 'src/user-features/user/models/user.model';
 import { CustomRequest } from '../interface/custom-request.interface';
+import { SessionTokenDocument } from '../models/session-token.model';
 
-export const GetUser = createParamDecorator(
+export const GetToken = createParamDecorator(
   (
     // parametros al usar el decorador
     data: string,
@@ -15,11 +15,12 @@ export const GetUser = createParamDecorator(
   ) => {
     const req: CustomRequest = ctx.switchToHttp().getRequest();
 
-    const user: User = req.user?.data as User;
+    const token = req.user?.sessionToken as SessionTokenDocument;
 
-    if (!user) throw new InternalServerErrorException('user not found request');
+    if (!token)
+      throw new InternalServerErrorException('user not found request');
 
-    const result = data ? user[data] : user;
+    const result = data ? token[data] : token;
 
     return result;
   },

@@ -1,7 +1,7 @@
 import { UseGuards, applyDecorators } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
-import { PermissionProtected } from './role-protected.decorator';
+import { PermissionProtected } from './permission-protected.decorator';
 import { UserPermissionsGuard } from '../guards/user-permission/user-permissionrole.guard';
 import { UserVerifiedGuard } from '../guards/user-verified/user-verified.guard';
 // import { VerifiedUser } from './verified-user.decorator';

@@ -10,7 +10,6 @@ import { AuthService } from '../auth.service';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     protected readonly configService: ConfigService,
-
     private readonly authService: AuthService,
   ) {
     super({
