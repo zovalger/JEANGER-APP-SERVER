@@ -36,11 +36,17 @@ export class AuthService {
   async login(loginUserDto: LoginUserDto) {
     const { email, password } = loginUserDto;
 
-    const user = await this.userService.getByEmail(email);
-    if (!user) throw new BadRequestException(Messages.error.invalidCredentials);
+    let user: null | UserDocument = null;
+
+    try {
+      user = await this.userService.getByEmail(email);
+    } catch (error) {
+      console.log(error && null);
+      throw new BadRequestException(Messages.error.invalidCredentials());
+    }
 
     if (!user.comparePassword(password))
-      throw new BadRequestException(Messages.error.invalidCredentials);
+      throw new BadRequestException(Messages.error.invalidCredentials());
 
     const sessionToken = new this.sessionTokenModel({
       type: TokenTypes.refresh,

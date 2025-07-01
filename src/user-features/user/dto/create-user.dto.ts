@@ -1,14 +1,12 @@
 import {
-  ArrayNotEmpty,
-  isArray,
-  IsArray,
   IsEmail,
-  IsEnum,
-  isString,
+  IsHexColor,
+  IsOptional,
+  IsString,
   IsStrongPassword,
+  IsUrl,
+  MinLength,
 } from 'class-validator';
-import { UserPermissions } from '../enum';
-import { Transform, TransformFnParams } from 'class-transformer';
 
 export class CreateUserDto {
   @IsEmail()
@@ -23,23 +21,38 @@ export class CreateUserDto {
   )
   password: string;
 
-  @IsArray()
-  @ArrayNotEmpty()
-  @IsEnum(UserPermissions, { each: true })
-  @Transform(({ value }: TransformFnParams) => {
-    if (!isArray(value)) return [];
+  // @IsArray()
+  // @ArrayNotEmpty()
+  // @IsEnum(UserPermissions, { each: true })
+  // @Transform(({ value }: TransformFnParams) => {
+  //   if (!isArray(value)) return [];
 
-    if (value.filter((item) => !isString(item)).length) return [];
+  //   if (value.filter((item) => !isString(item)).length) return [];
 
-    const arr = value as string[];
+  //   const arr = value as string[];
 
-    const uniquesValue: string[] = [];
+  //   const uniquesValue: string[] = [];
 
-    arr.map((item) => {
-      if (!uniquesValue.includes(item)) uniquesValue.push(item);
-    });
+  //   arr.map((item) => {
+  //     if (!uniquesValue.includes(item)) uniquesValue.push(item);
+  //   });
 
-    return uniquesValue;
-  })
-  permissions: UserPermissions[];
+  //   return uniquesValue;
+  // })
+  // permissions: UserPermissions[];
+
+  @IsString()
+  @MinLength(3)
+  name: string;
+
+  @IsString()
+  @MinLength(3)
+  lastname: string;
+
+  @IsHexColor()
+  identityColor: string;
+
+  @IsOptional()
+  @IsUrl()
+  photoURL: string;
 }

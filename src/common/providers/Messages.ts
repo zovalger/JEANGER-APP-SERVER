@@ -13,6 +13,7 @@ export class Messages {
     updated: (item: ModuleItems) =>
       `El/La ${item} fue actualizado correctamente`,
     deleted: (item: ModuleItems) => `El/La ${item} fue eliminado correctamente`,
+    passwordsChanged: () => 'la contraseña fue actualizado correctamente',
   };
 
   static error = {
@@ -27,10 +28,13 @@ export class Messages {
 
     internal: () => 'Error en el servidor',
     duplicate: () => 'Ya existe un registro con esos datos',
+
+    passwordsNotMatch: () => 'las contraseñas no coinciden',
     invalidCredentials: () => 'usuario/Contraseña incorrecta',
     withoutPermission: () => 'not have required permission',
     notToken: () => 'token no encontrado',
     defeatedToken: () => 'token vencido',
+
     whenObtaining: (item: ModuleItems) => `error al intentar obtener ${item}`,
     whenObtainingProfile: () => 'whenObtainingProfile',
   };

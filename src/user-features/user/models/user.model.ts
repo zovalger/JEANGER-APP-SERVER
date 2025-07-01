@@ -13,8 +13,24 @@ export class User {
   @Prop({ type: String, require: true })
   password: string;
 
-  @Prop({ type: [String], enum: UserPermissions })
+  @Prop({
+    type: [String],
+    enum: UserPermissions,
+    default: [UserPermissions.simple],
+  })
   permissions: UserPermissions[];
+
+  @Prop({ type: String, trim: true, require: true, uppercase: true })
+  name: string;
+
+  @Prop({ type: String, trim: true, require: true, uppercase: true })
+  lastname: string;
+
+  @Prop({ type: String, trim: true, require: true, default: '#000000' })
+  identityColor: string;
+
+  @Prop({ type: String, trim: true })
+  photoURL: string;
 
   @Prop()
   createdAt: Date;
