@@ -33,10 +33,6 @@ export class AuthService {
     private readonly sessionTokenModel: Model<SessionToken>,
   ) {}
 
-  // login(loginUserDto: LoginUserDto) {
-  //   return 'This action adds a new auth';
-  // }
-
   async login(loginUserDto: LoginUserDto) {
     const { email, password } = loginUserDto;
 
@@ -70,10 +66,6 @@ export class AuthService {
       _id: sessionToken._id,
     });
   }
-
-  // async profile(user: User) {
-  //   return user;
-  // }
 
   async findById(id: string) {
     const sessionToken = await this.sessionTokenModel.findById(id);
