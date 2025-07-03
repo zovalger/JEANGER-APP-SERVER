@@ -52,5 +52,5 @@ export default async function BCV_ForeignExchange(): Promise<CreateForeignExchan
 
   if (!dolar || !euro || !fecha) throw new Error('error al obtener divisas');
 
-  return { dolar, euro, bankBusinessDate: new Date(fecha) };
+  return { dolar, euro, bankBusinessDate: fecha };
 }

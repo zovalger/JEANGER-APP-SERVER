@@ -25,6 +25,8 @@ export class ForeignExchangeController {
     @GetUser('_id') userId: Types.ObjectId,
     @Body() createForeignExchangeDto: CreateForeignExchangeDto,
   ) {
+    console.log(createForeignExchangeDto);
+
     const foreignExchange = await this.foreignExchangeService.create(
       createForeignExchangeDto,
       userId.toString(),
@@ -33,7 +35,7 @@ export class ForeignExchangeController {
     return { data: foreignExchange };
   }
 
-  @Get('scraping')
+  @Post('scraping')
   async webScraping() {
     const foreignExchange = await this.foreignExchangeService.webScraping();
 
@@ -41,6 +43,7 @@ export class ForeignExchangeController {
   }
 
   @Get()
+  @Auth()
   async findAll() {
     // todo: hacer paginacion y busquedas
     const foreignExchanges = await this.foreignExchangeService.findAll();

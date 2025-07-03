@@ -9,5 +9,6 @@ import { AuthModule } from 'src/user-features/auth/auth.module';
   imports: [AuthModule, MongooseModule.forFeatureAsync([ForeignExchangeModel])],
   controllers: [ForeignExchangeController],
   providers: [ForeignExchangeService],
+  exports: [ForeignExchangeService],
 })
 export class ForeignExchangeModule {}

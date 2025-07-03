@@ -1,4 +1,4 @@
-import { IsDate, IsNumber, IsPositive } from 'class-validator';
+import { IsDateString, IsNumber, IsPositive } from 'class-validator';
 
 export class CreateForeignExchangeDto {
   @IsNumber()
@@ -9,6 +9,6 @@ export class CreateForeignExchangeDto {
   @IsPositive()
   euro: number;
 
-  @IsDate()
-  bankBusinessDate: Date;
+  @IsDateString()
+  bankBusinessDate: string;
 }

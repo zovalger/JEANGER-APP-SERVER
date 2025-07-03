@@ -83,6 +83,8 @@ export class ForeignExchangeService {
     if (!foreignExchange.createdBy)
       throw new ForbiddenException(Messages.error.onDeleteForeignExchange());
 
+    // todo: ver si tiene dependencias antes de eliminar
+
     const result = await this.foreignExchangeModel.deleteOne({ _id: id });
 
     return !!result.deletedCount;
