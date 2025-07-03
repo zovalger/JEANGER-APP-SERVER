@@ -5,6 +5,7 @@ export enum ModuleItems {
   billItem = 'item de factura',
   product = 'producto',
   stopwatch = 'cronometro',
+  foreignExchange = 'divisas',
 }
 
 export class Messages {
@@ -37,5 +38,7 @@ export class Messages {
 
     whenObtaining: (item: ModuleItems) => `error al intentar obtener ${item}`,
     whenObtainingProfile: () => 'whenObtainingProfile',
+    onDeleteForeignExchange: () =>
+      'no se puede eliminar debido a que el registro de divisas no fue creado por un usuario',
   };
 }
