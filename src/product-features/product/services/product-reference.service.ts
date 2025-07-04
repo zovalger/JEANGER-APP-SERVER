@@ -1,7 +1,15 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateProductReferenceDto, UpdateProductReferenceDto } from '../dto';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
+import {
+  CreateProductReferenceDto,
+  QueryProductReferencesDto,
+  UpdateProductReferenceDto,
+} from '../dto';
 import { ProductDocument, ProductReference } from '../models';
-import { Model } from 'mongoose';
+import mongoose, { Document, Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { ProductService } from './product.service';
 import { Messages, ModuleItems } from 'src/common/providers/Messages';
@@ -28,27 +36,18 @@ export class ProductReferenceService {
 
     // si existe se actualiza
     if (oldReference)
-      return await this.updateProductReference_service(
+      return await this.update(
         oldReference._id.toString(),
         createProductReferenceDto,
       );
 
-    // sino se crea
-    const product = await this.productService.findOne(parentId);
-
-    const { cost, currencyType } = product;
-
-    const productReference = new this.productReferenceModel({
-      ...createProductReferenceDto,
-      cost,
-      currencyType,
-    });
+    const productReference = new this.productReferenceModel(
+      createProductReferenceDto,
+    );
 
     await productReference.save();
 
-    await this.updateProductReferences_Recursive_service(
-      productReference.childId.toString(),
-    );
+    await this.updateProductReferences_Recursive_service(childId);
 
     return productReference;
   }
@@ -56,12 +55,6 @@ export class ProductReferenceService {
   // ****************************************************************************
   // 										              obtener
   // ****************************************************************************
-
-  findAll = async () => {
-    const productsReferences = await this.productReferenceModel.find();
-
-    return productsReferences;
-  };
 
   findOne = async (id: string) => {
     const productReference = await this.productReferenceModel.findById(id);
@@ -74,34 +67,21 @@ export class ProductReferenceService {
     return productReference;
   };
 
-  getProductReference_by_ParentId_service = async (parentId: string) => {
-    const productReference = await this.productReferenceModel.find({
-      parentId,
-    });
+  findAll = async (queryProductReferencesDto: QueryProductReferencesDto) => {
+    const productsReferences = await this.productReferenceModel
+      .find(queryProductReferencesDto)
+      .sort({ name: 1 });
 
-    if (!productReference)
-      throw new BadRequestException(
-        Messages.error.notFound(ModuleItems.productReference),
-      );
-
-    return productReference;
+    return productsReferences;
   };
 
-  getProductReference_by_ChildId_service = async (childId: string) => {
-    const productReference = await this.productReferenceModel.find({ childId });
+  getPosibleProductParents = async (childId: string) => {
+    const curretParents = await this.findAll({ childId });
 
-    if (!productReference)
-      throw new BadRequestException(
-        Messages.error.notFound(ModuleItems.productReference),
-      );
-
-    return productReference;
-  };
-
-  getPosibleProductParents_By_ProductId_service = async (childId: string) => {
-    const curretParents = await this.productReferenceModel.find({ childId });
-
-    const noId = [childId, ...curretParents.map((v) => v.parentId.toString())];
+    const noId = [
+      childId,
+      ...curretParents.map((v) => this.getIdOfObject(v.parentId)),
+    ];
 
     for (let index = 1; index < noId.length; index++) {
       const p = noId[index];
@@ -112,35 +92,143 @@ export class ProductReferenceService {
 
       afterParent.forEach((pr) => {
         const found = noId.find(
-          (id) => id.toString() === pr.parentId.toString(),
+          (id) => id.toString() === this.getIdOfObject(pr.parentId),
         );
 
-        if (!found) noId.push(pr.parentId.toString());
+        if (!found) noId.push(this.getIdOfObject(pr.parentId));
       });
     }
 
     const toParents = await this.productService.findAllExcept(noId);
 
-    return toParents.map((v) => v._id) || undefined;
+    return toParents.map((v) => v._id);
+  };
+
+  // ****************************************************************************
+  // 										              actualizar
+  // ****************************************************************************
+
+  // actualizar una sola referencia
+  update = async (
+    id: string,
+    updateProductReferenceDto: UpdateProductReferenceDto,
+  ) => {
+    const productReference = await this.productReferenceModel.findByIdAndUpdate(
+      id,
+      updateProductReferenceDto,
+      { new: true },
+    );
+
+    if (!productReference)
+      throw new BadRequestException(
+        Messages.error.notFound(ModuleItems.productReference),
+      );
+
+    await this.updateProductReferences_Recursive_service(
+      this.getIdOfObject(productReference.childId),
+    );
+
+    return productReference;
+  };
+
+  // actualizar todas las referencias donde el padre sea el parentid
+  // updateProductReferences_By_Parent_recursive_service = async (
+  //   data: Partial<ProductReference>,
+  // ) => {
+  //   const { parentId, cost, currencyType } = data;
+
+  //   await this.productReferenceModel.findOneAndUpdate(
+  //     { parentId },
+  //     { cost, currencyType },
+  //   );
+
+  //   return await this.productReferenceModel.find({ parentId });
+  // };
+
+  // actualizar todas las referencias donde sea un hijo
+  // updateProductReferences_By_Child_service = async (data: ProductReference) => {
+  //   const { childId, cost, currencyType, percentage, amount } = data;
+
+  //   await this.productReferenceModel.findOneAndUpdate(
+  //     { childId },
+  //     { cost, currencyType, percentage, amount },
+  //   );
+
+  //   return await this.productReferenceModel.find({ childId });
+  // };
+
+  // ****************************************************************************
+  // 										              eliminar
+  // ****************************************************************************
+
+  // async deleteProductReference_service(_id: string) {
+  //   const result = await this.productReferenceModel.deleteOne({ _id });
+
+  //   await this.updateProductReferences_Recursive_service(_id);
+
+  //   return !!result.deletedCount;
+  // }
+
+  async remove(id: string, recursive = true) {
+    const ref = await this.findOne(id);
+
+    await this.productReferenceModel.deleteOne({
+      id,
+    });
+
+    const childId = this.getIdOfObject(ref.childId);
+
+    if (recursive)
+      await this.updateProductReferences_Recursive_service(childId);
+
+    return true;
+  }
+
+  // ****************************************************************************
+  // 										        actualizar hijos
+  // ****************************************************************************
+
+  // actualizar las referencias hijas
+  updateProductReferences_Recursive_service = async (productId: string) => {
+    console.log('actualizador recursivo');
+
+    const cost = await this.getCost_by_References_service(productId);
+
+    await this.productService.update(productId, { cost });
+
+    const childsReferences = await this.findAll({
+      parentId: productId,
+    });
+
+    for (const reference of childsReferences) {
+      const childId = this.getIdOfObject(reference.childId);
+
+      await this.updateProductReferences_Recursive_service(childId);
+    }
   };
 
   // devuelve el monto en dolares
-  getCost_by_References_service = async ({
-    _id: productId,
-    currencyType: currencyTypeProd,
-  }: ProductDocument) => {
+  private async getCost_by_References_service(productId: string) {
+    const product = await this.productService.findOne(productId);
     const foreignExchange = await this.foreignExchangeService.last();
 
-    const productReferences = await this.getProductReference_by_ChildId_service(
-      productId.toString(),
-    );
+    const productReferences = await this.productReferenceModel
+      .find({
+        childId: productId,
+      })
+      .populate<{ parentId: ProductDocument }>('parentId');
 
     if (!foreignExchange) return 0;
-    if (!productReferences) return 0;
+    if (!productReferences.length) return 0;
 
     const costInDolar = productReferences.reduce(
       (total: number, reference: ProductReference) => {
-        const { cost, currencyType, amount, percentage } = reference;
+        const { parentId, amount, percentage } = reference;
+
+        if (parentId instanceof mongoose.Types.ObjectId)
+          throw new InternalServerErrorException('parentId is not populated');
+
+        const { cost, currencyType } = parentId;
 
         let toSum = cost * percentage * amount;
 
@@ -156,142 +244,30 @@ export class ProductReferenceService {
     );
 
     const costInCurrencyType =
-      currencyTypeProd == CurrencyType.EUR
+      product.currencyType == CurrencyType.EUR
         ? (costInDolar * foreignExchange.dolar) / foreignExchange.euro
-        : currencyTypeProd == CurrencyType.BSF
+        : product.currencyType == CurrencyType.BSF
           ? costInDolar * foreignExchange.dolar
           : costInDolar;
 
     return costInCurrencyType;
-  };
+  }
 
-  // ****************************************************************************
-  // 										              eliminar
-  // ****************************************************************************
+  private getIdOfObject(obj: unknown): string {
+    let id: string | null = null;
 
-  deleteProductReference_service = async (_id: string) => {
-    const result = await this.productReferenceModel.deleteOne({ _id });
+    if (obj instanceof mongoose.Types.ObjectId) id = obj.toString();
 
-    await this.updateProductReferences_Recursive_service(_id);
+    if (typeof obj === 'object' && obj !== null && '_id' in obj)
+      id =
+        obj._id instanceof mongoose.Types.ObjectId
+          ? obj._id.toString()
+          : typeof obj._id === 'string'
+            ? obj._id
+            : null;
 
-    return !!result.deletedCount;
-  };
+    if (!id) throw new InternalServerErrorException('no id');
 
-  deleteProductReference_by_ProductsId_service = async (
-    parentId: string,
-    childId: string,
-  ) => {
-    const result = await this.productReferenceModel.deleteOne({
-      parentId,
-      childId,
-    });
-
-    await this.updateProductReferences_Recursive_service(childId);
-
-    return !!result.deletedCount;
-  };
-
-  // ****************************************************************************
-  // 										              actualizar
-  // ****************************************************************************
-
-  // actualizar una sola referencia
-  updateProductReference_service = async (
-    id: string,
-    data: UpdateProductReferenceDto,
-  ) => {
-    const { percentage, amount, parentId, childId } = data;
-
-    const productReference = await this.findOne(id);
-
-    if (parentId) {
-      const product = await this.productService.findOne(parentId.toString());
-      const { cost, currencyType } = product;
-
-      productReference.currencyType = currencyType;
-      productReference.cost = cost;
-    }
-
-    if (amount) productReference.amount = amount;
-    if (percentage) productReference.percentage = percentage;
-
-    await productReference.save();
-
-    await this.updateProductReferences_Recursive_service(
-      productReference.childId.toString(),
-    );
-
-    return productReference;
-  };
-
-  // actualizar todas las referencias donde el padre sea el parentid
-  updateProductReferences_By_Parent_service = async (
-    data: Partial<ProductReference>,
-  ) => {
-    const { parentId, cost, currencyType } = data;
-
-    await this.productReferenceModel.findOneAndUpdate(
-      { parentId },
-      { cost, currencyType },
-    );
-
-    return await this.productReferenceModel.find({ parentId });
-  };
-
-  // actualizar todas las referencias donde el padre sea el parentid
-  updateProductReferences_By_Parent_recursive_service = async (
-    data: Partial<ProductReference>,
-  ) => {
-    const { parentId, cost, currencyType } = data;
-
-    await this.productReferenceModel.findOneAndUpdate(
-      { parentId },
-      { cost, currencyType },
-    );
-
-    return await this.productReferenceModel.find({ parentId });
-  };
-
-  // actualizar todas las referencias donde sea un hijo
-  updateProductReferences_By_Child_service = async (data: ProductReference) => {
-    const { childId, cost, currencyType, percentage, amount } = data;
-
-    await this.productReferenceModel.findOneAndUpdate(
-      { childId },
-      { cost, currencyType, percentage, amount },
-    );
-
-    return await this.productReferenceModel.find({ childId });
-  };
-
-  // ****************************************************************************
-  // 										        actualizar hijos
-  // ****************************************************************************
-
-  // actualizar las referencias hijas
-  updateProductReferences_Recursive_service = async (productId: string) => {
-    console.log('actualizador recursivo');
-
-    const product =
-      await this.productService.updateCost_by_References(productId);
-
-    if (!product) return;
-
-    const childsReferences =
-      await this.updateProductReferences_By_Parent_service({
-        parentId: product._id,
-        cost: product.cost,
-        currencyType: product.currencyType,
-      });
-
-    if (!childsReferences) return;
-
-    for (const r of childsReferences) {
-      await this.updateProductReferences_Recursive_service(
-        r.childId.toString(),
-      );
-    }
-
-    return;
-  };
+    return id;
+  }
 }

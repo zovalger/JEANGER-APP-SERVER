@@ -4,10 +4,13 @@ import { Model } from 'mongoose';
 import { Messages, ModuleItems } from 'src/common/providers/Messages';
 import { CreateProductDto, UpdateProductDto } from '../dto';
 import { Product } from '../models';
+import { ProductReferenceService } from './product-reference.service';
 
 @Injectable()
 export class ProductService {
   constructor(
+    private readonly productReferenceService: ProductReferenceService,
+
     @InjectModel(Product.name)
     private readonly productModel: Model<Product>,
   ) {}
@@ -46,18 +49,19 @@ export class ProductService {
   }
 
   async update(id: string, updateProductDto: UpdateProductDto) {
-    await this.findOne(id);
-
     const product = await this.productModel.findByIdAndUpdate(
       id,
       updateProductDto,
       { new: true },
     );
 
+    if (!product)
+      throw new BadRequestException(
+        Messages.error.notFound(ModuleItems.product),
+      );
+
     // todo: actualizar referencias
     // await updateProductReferences_Recursive_service(product._id);
-
-    // await product.save();
 
     return product;
   }
@@ -75,10 +79,17 @@ export class ProductService {
   }
 
   async remove(id: string) {
-    // todo: ver si hay referencias
-    // const childs = await getProductReference_by_ParentId_service(_id);
-    // if (childs && childs.length) return;
-    // const result = await ProductModel.deleteOne({ _id });
-    // return !!result.deletedCount;
+    const childs = await this.productReferenceService.findAll({ parentId: id });
+
+    if (childs && childs.length) return;
+
+    const parents = await this.productReferenceService.findAll({ childId: id });
+
+    for (const element of parents) {
+      await this.productReferenceService.remove(element._id.toString(), false);
+    }
+
+    const result = await this.productModel.deleteOne({ _id: id });
+    return !!result.deletedCount;
   }
 }
