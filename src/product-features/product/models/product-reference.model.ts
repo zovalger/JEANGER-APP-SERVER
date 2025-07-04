@@ -27,6 +27,7 @@ export class ProductReference {
   @Prop({ type: Number, required: true, default: 1 })
   amount: number;
 
+  // todo: eliminar el costo y el currency type
   @Prop({ type: Number, default: 0, required: true })
   cost: number;
 

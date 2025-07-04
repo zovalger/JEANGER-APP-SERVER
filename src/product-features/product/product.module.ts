@@ -1,19 +1,18 @@
 import { Module } from '@nestjs/common';
-import { ProductService } from './services/product.service';
-import { ProductController } from './product.controller';
-import { AuthModule } from 'src/user-features/auth/auth.module';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ProductModel } from './models/product.model';
-import { ProductReferenceService } from './services/product-reference.service';
 import { ForeignExchangeModule } from 'src/foreign-exchange/foreign-exchange.module';
+import { AuthModule } from 'src/user-features/auth/auth.module';
+import { ProductController, ProductReferenceController } from './controllers';
+import { ProductModel, ProductReferenceModel } from './models';
+import { ProductReferenceService, ProductService } from './services';
 
 @Module({
   imports: [
     AuthModule,
     ForeignExchangeModule,
-    MongooseModule.forFeatureAsync([ProductModel]),
+    MongooseModule.forFeatureAsync([ProductModel, ProductReferenceModel]),
   ],
-  controllers: [ProductController],
+  controllers: [ProductController, ProductReferenceController],
   providers: [ProductService, ProductReferenceService],
 })
 export class ProductModule {}

@@ -26,6 +26,14 @@ export class ProductService {
     return products;
   }
 
+  async findAllExcept(id: string[]) {
+    const products = await this.productModel
+      .find({ _id: { $nin: id } })
+      .sort({ name: 1 });
+
+    return products;
+  }
+
   async findOne(id: string) {
     const product = await this.productModel.findById(id);
 
