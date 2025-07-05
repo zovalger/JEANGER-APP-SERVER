@@ -24,7 +24,14 @@ export class CreateProductDto {
   currencyType: CurrencyType;
 
   @IsArray()
-  @Transform(({ value }: TransformFnParams) => {
+  @Transform(({ value, obj, key, options, type }: TransformFnParams) => {
+    console.log(obj);
+    console.log(key);
+    console.log(options);
+    console.log(type);
+
+    console.log('**************');
+
     if (!isArray(value)) return [];
 
     if (value.filter((item) => !isString(item)).length) return [];
@@ -34,12 +41,32 @@ export class CreateProductDto {
     const uniquesValue: string[] = [];
 
     arr.map((item) => {
-      if (!uniquesValue.includes(item)) uniquesValue.push(item);
+      if (!uniquesValue.includes(item.trim())) uniquesValue.push(item.trim());
     });
 
     return uniquesValue;
   })
   keywords: string[];
+
+  @IsArray()
+  @Transform(({ value, obj, key, options, type }: TransformFnParams) => {
+    console.log(obj, key, options, type);
+
+    if (!isArray(value)) return [];
+
+    if (value.filter((item) => !isString(item)).length) return [];
+
+    const arr = value as string[];
+
+    const uniquesValue: string[] = [];
+
+    arr.map((item) => {
+      if (!uniquesValue.includes(item.trim())) uniquesValue.push(item.trim());
+    });
+
+    return uniquesValue;
+  })
+  autoKeywords: string[];
 
   @IsNumber()
   priority: number;

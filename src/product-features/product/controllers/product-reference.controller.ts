@@ -23,6 +23,7 @@ export class ProductReferenceController {
   ) {}
 
   @Post()
+  @Auth()
   async create(@Body() createProductReferenceDto: CreateProductReferenceDto) {
     const productReference = await this.productReferenceService.create(
       createProductReferenceDto,
@@ -31,6 +32,8 @@ export class ProductReferenceController {
     return { data: productReference };
   }
 
+  @Get()
+  @Auth()
   async findAll(@Query() queryProductReferencesDto: QueryProductReferencesDto) {
     const productReferences = await this.productReferenceService.findAll(
       queryProductReferencesDto,
@@ -39,12 +42,12 @@ export class ProductReferenceController {
     return { data: productReferences };
   }
 
-  @Get()
-  async posibleParents(@Param('id') id: string) {
-    const productPosibleParents =
-      await this.productReferenceService.getPosibleProductParents(id);
+  @Get(':id')
+  @Auth()
+  async findOne(@Param('id') id: string) {
+    const productReference = await this.productReferenceService.findOne(id);
 
-    return { data: productPosibleParents };
+    return { data: productReference };
   }
 
   @Patch(':id')
@@ -61,14 +64,19 @@ export class ProductReferenceController {
     return { data: productReference };
   }
 
-  // ****************************************************************************
-  // 										              eliminar
-  // ****************************************************************************
-
   @Delete(':id')
   async remove(@Param('id') id: string) {
     const result = await this.productReferenceService.remove(id);
 
     return { data: result };
+  }
+
+  @Get('posible-parents/:productId')
+  @Auth()
+  async posibleParents(@Param('productId') productId: string) {
+    const productPosibleParents =
+      await this.productReferenceService.getPosibleProductParents(productId);
+
+    return { data: productPosibleParents };
   }
 }

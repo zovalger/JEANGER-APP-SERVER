@@ -11,6 +11,7 @@ import { ProductService } from '../services/product.service';
 import { CreateProductDto } from '../dto/create-product.dto';
 import { UpdateProductDto } from '../dto/update-product.dto';
 import { Auth } from 'src/user-features/auth/decorators';
+import { CreateProductPipe, UpdateProductPipe } from '../pipes';
 
 @Controller('product')
 export class ProductController {
@@ -18,7 +19,7 @@ export class ProductController {
 
   @Post()
   @Auth()
-  async create(@Body() createProductDto: CreateProductDto) {
+  async create(@Body(CreateProductPipe) createProductDto: CreateProductDto) {
     const product = await this.productService.create(createProductDto);
     return { data: product };
   }
@@ -41,7 +42,7 @@ export class ProductController {
   @Auth()
   async update(
     @Param('id') id: string,
-    @Body() updateProductDto: UpdateProductDto,
+    @Body(UpdateProductPipe) updateProductDto: UpdateProductDto,
   ) {
     const product = await this.productService.update(id, updateProductDto);
     return { data: product };

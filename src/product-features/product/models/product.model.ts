@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 import { HydratedDocument } from 'mongoose';
 import { CurrencyType } from 'src/common/enums/currency-type.enum';
+import { keywordsNormalizeHelper } from '../helpers';
 
 export type ProductDocument = HydratedDocument<Product>;
 
@@ -60,21 +61,29 @@ export const ProductModel = {
     schema.pre('save', function (next) {
       const product = this as ProductDocument;
 
-      if (!product.isModified('name')) next();
+      if (product.isModified('name')) {
+        const toSet: string[] = [];
 
-      const { name } = product;
+        product.name.split(' ').map((word) => {
+          const normilizeWord = keywordsNormalizeHelper(word);
+          if (normilizeWord.length >= 2 && !toSet.includes(normilizeWord))
+            toSet.push(normilizeWord);
+        });
 
-      const r = new RegExp(
-        '([^n\u0300-\u036f]|n(?!\u0303(?![\u0300-\u036f])))[\u0300-\u036f]+',
-        'gi',
-      );
+        product.autoKeywords = toSet;
+      }
 
-      product.autoKeywords = name
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(r, '$1')
-        .normalize()
-        .split(' ');
+      if (product.isModified('keywords')) {
+        const toSet: string[] = [];
+
+        product.keywords.map((word) => {
+          const normilizeWord = keywordsNormalizeHelper(word);
+          if (normilizeWord.length >= 2 && !toSet.includes(normilizeWord))
+            toSet.push(normilizeWord);
+        });
+
+        product.keywords = toSet;
+      }
 
       next();
     });

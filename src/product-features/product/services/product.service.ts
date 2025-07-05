@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Messages, ModuleItems } from 'src/common/providers/Messages';
@@ -9,6 +14,7 @@ import { ProductReferenceService } from './product-reference.service';
 @Injectable()
 export class ProductService {
   constructor(
+    @Inject(forwardRef(() => ProductReferenceService))
     private readonly productReferenceService: ProductReferenceService,
 
     @InjectModel(Product.name)
@@ -48,35 +54,59 @@ export class ProductService {
     return product;
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto) {
-    const product = await this.productModel.findByIdAndUpdate(
-      id,
-      updateProductDto,
-      { new: true },
-    );
+  async update(
+    id: string,
+    updateProductDto: UpdateProductDto,
+    updateFromReferences = false,
+  ) {
+    const { cost, ...rest } = updateProductDto;
+
+    let toUpdate = updateProductDto;
+
+    if (!updateFromReferences) {
+      const hasParents =
+        await this.productReferenceService.hasParentReferences(id);
+
+      if (hasParents) toUpdate = rest;
+    }
+
+    const product = await this.productModel.findByIdAndUpdate(id, toUpdate, {
+      new: true,
+    });
 
     if (!product)
       throw new BadRequestException(
         Messages.error.notFound(ModuleItems.product),
       );
 
-    // todo: actualizar referencias
-    // await updateProductReferences_Recursive_service(product._id);
+    if (updateFromReferences) return product;
+
+    if (cost == undefined) return product;
+
+    const hasChilds =
+      await this.productReferenceService.hasChildsReferences(id);
+
+    if (!hasChilds) return product;
+
+    await this.productReferenceService.updateProductReferences_Recursive_service(
+      product._id.toString(),
+      { setSelfCost: false },
+    );
 
     return product;
   }
 
-  async updateCost_by_References(productId: string) {
-    const product = await this.findOne(productId);
+  // async updateCost_by_References(productId: string) {
+  //   const product = await this.findOne(productId);
 
-    // todo: obtener costos por referencias
-    // product.cost =
-    //   (await getCost_by_References_service(product)) || product.cost;
+  //   // todo: obtener costos por referencias
+  //   // product.cost =
+  //   //   (await getCost_by_References_service(product)) || product.cost;
 
-    await product.save();
+  //   await product.save();
 
-    return product;
-  }
+  //   return product;
+  // }
 
   async remove(id: string) {
     const childs = await this.productReferenceService.findAll({ parentId: id });

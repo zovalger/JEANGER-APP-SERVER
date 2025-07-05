@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
@@ -19,6 +21,7 @@ import { CurrencyType } from 'src/common/enums/currency-type.enum';
 @Injectable()
 export class ProductReferenceService {
   constructor(
+    @Inject(forwardRef(() => ProductService))
     private readonly productService: ProductService,
     private readonly foreignExchangeService: ForeignExchangeService,
 
@@ -188,13 +191,34 @@ export class ProductReferenceService {
   // 										        actualizar hijos
   // ****************************************************************************
 
+  async hasParentReferences(productId: string) {
+    const c = await this.productReferenceModel.countDocuments({
+      childId: productId,
+    });
+
+    return !!c;
+  }
+
+  async hasChildsReferences(productId: string) {
+    const c = await this.productReferenceModel.countDocuments({
+      parentId: productId,
+    });
+
+    return !!c;
+  }
+
   // actualizar las referencias hijas
-  updateProductReferences_Recursive_service = async (productId: string) => {
-    console.log('actualizador recursivo');
+  updateProductReferences_Recursive_service = async (
+    productId: string,
+    options = { setSelfCost: true },
+  ) => {
+    const { setSelfCost } = options;
 
-    const cost = await this.getCost_by_References_service(productId);
+    if (setSelfCost) {
+      const cost = await this.getCost_by_References(productId);
 
-    await this.productService.update(productId, { cost });
+      await this.productService.update(productId, { cost }, true);
+    }
 
     const childsReferences = await this.findAll({
       parentId: productId,
@@ -208,7 +232,7 @@ export class ProductReferenceService {
   };
 
   // devuelve el monto en dolares
-  private async getCost_by_References_service(productId: string) {
+  private async getCost_by_References(productId: string) {
     const product = await this.productService.findOne(productId);
     const foreignExchange = await this.foreignExchangeService.last();
 
