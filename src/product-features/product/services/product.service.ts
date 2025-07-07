@@ -22,6 +22,8 @@ export class ProductService {
   ) {}
 
   async create(createProductDto: CreateProductDto) {
+    console.log(createProductDto);
+
     const product = new this.productModel(createProductDto);
 
     await product.save();
@@ -59,7 +61,7 @@ export class ProductService {
     updateProductDto: UpdateProductDto,
     updateFromReferences = false,
   ) {
-    const { cost, ...rest } = updateProductDto;
+    const rest = { ...updateProductDto, cost: undefined };
 
     let toUpdate = updateProductDto;
 
@@ -79,21 +81,35 @@ export class ProductService {
         Messages.error.notFound(ModuleItems.product),
       );
 
-    if (updateFromReferences) return product;
+    await this.updateChildrenDecision(
+      id,
+      updateProductDto,
+      updateFromReferences,
+    );
 
-    if (cost == undefined) return product;
+    return product;
+  }
+
+  private async updateChildrenDecision(
+    id: string,
+    updateProductDto: UpdateProductDto,
+    updateFromReferences = false,
+  ) {
+    const { cost } = updateProductDto;
+
+    if (updateFromReferences) return;
+
+    if (cost == undefined) return;
 
     const hasChilds =
       await this.productReferenceService.hasChildsReferences(id);
 
-    if (!hasChilds) return product;
+    if (!hasChilds) return;
 
     await this.productReferenceService.updateProductReferences_Recursive_service(
-      product._id.toString(),
+      id,
       { setSelfCost: false },
     );
-
-    return product;
   }
 
   // async updateCost_by_References(productId: string) {

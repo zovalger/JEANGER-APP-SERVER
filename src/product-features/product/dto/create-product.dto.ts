@@ -5,11 +5,16 @@ import {
   IsBoolean,
   IsEnum,
   IsNumber,
+  IsOptional,
   isString,
   IsString,
   MinLength,
 } from 'class-validator';
 import { CurrencyType } from 'src/common/enums/currency-type.enum';
+import {
+  keywordsNormalizeHelper,
+  strToUniqueWordArrayHelper,
+} from '../helpers';
 
 export class CreateProductDto {
   @IsString()
@@ -24,14 +29,8 @@ export class CreateProductDto {
   currencyType: CurrencyType;
 
   @IsArray()
-  @Transform(({ value, obj, key, options, type }: TransformFnParams) => {
-    console.log(obj);
-    console.log(key);
-    console.log(options);
-    console.log(type);
-
-    console.log('**************');
-
+  @IsString({ each: true })
+  @Transform(({ value }: TransformFnParams) => {
     if (!isArray(value)) return [];
 
     if (value.filter((item) => !isString(item)).length) return [];
@@ -39,34 +38,51 @@ export class CreateProductDto {
     const arr = value as string[];
 
     const uniquesValue: string[] = [];
-
     arr.map((item) => {
-      if (!uniquesValue.includes(item.trim())) uniquesValue.push(item.trim());
+      if (!uniquesValue.includes(item.trim()))
+        uniquesValue.push(keywordsNormalizeHelper(item));
     });
 
     return uniquesValue;
   })
   keywords: string[];
 
+  @IsOptional()
   @IsArray()
-  @Transform(({ value, obj, key, options, type }: TransformFnParams) => {
-    console.log(obj, key, options, type);
+  @Transform(({ obj }: TransformFnParams) => {
+    const name = obj?.name;
 
-    if (!isArray(value)) return [];
+    if (typeof name !== 'string') return;
 
-    if (value.filter((item) => !isString(item)).length) return [];
-
-    const arr = value as string[];
-
-    const uniquesValue: string[] = [];
-
-    arr.map((item) => {
-      if (!uniquesValue.includes(item.trim())) uniquesValue.push(item.trim());
-    });
-
-    return uniquesValue;
+    return strToUniqueWordArrayHelper(name);
   })
   autoKeywords: string[];
+
+  @IsOptional()
+  @IsArray()
+  @Transform(({ obj }: TransformFnParams) => {
+    if (typeof obj !== 'object') return;
+
+    const keywords: string[] = obj?.keywords;
+
+    const autoKeywords =
+      typeof obj?.name === 'string'
+        ? strToUniqueWordArrayHelper(obj.name)
+        : null;
+
+    if (!(keywords instanceof Array) || !(autoKeywords instanceof Array))
+      return;
+
+    const toSet: string[] = [...keywords];
+
+    autoKeywords.map((word) => {
+      const normilizeWord = keywordsNormalizeHelper(word);
+      if (!toSet.includes(normilizeWord)) toSet.push(normilizeWord);
+    });
+
+    return toSet;
+  })
+  allKeywords: string[];
 
   @IsNumber()
   priority: number;
