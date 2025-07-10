@@ -22,6 +22,7 @@ import { Messages, ModuleItems } from 'src/common/providers/Messages';
 import { ForeignExchangeService } from 'src/foreign-exchange/foreign-exchange.service';
 import { CurrencyType } from 'src/common/enums/currency-type.enum';
 import { SystemRequirementsDto } from 'src/common/dto/system-requirements.dto';
+import Decimal from 'decimal.js';
 
 @Injectable()
 export class ProductReferenceService {
@@ -85,8 +86,14 @@ export class ProductReferenceService {
     queryProductReferencesDto: QueryProductReferencesDto,
     populateFields?: (keyof ProductReferenceDocument)[],
   ) => {
+    const filteredQuery = Object.fromEntries(
+      Object.entries(queryProductReferencesDto).filter(
+        (a) => a[1] !== undefined,
+      ),
+    );
+
     let query = this.productReferenceModel
-      .find(queryProductReferencesDto)
+      .find(filteredQuery)
       .sort({ name: 1 });
 
     // Si se especifican campos para el populate, se aplican
@@ -255,7 +262,7 @@ export class ProductReferenceService {
   };
 
   // devuelve el monto en dolares
-  private async getCost_by_References(productId: string) {
+  private async getCost_by_References(productId: string): Promise<number> {
     const product = await this.productService.findOne(productId);
     const foreignExchange = await this.foreignExchangeService.last();
 
@@ -269,7 +276,7 @@ export class ProductReferenceService {
     if (!productReferences.length) return 0;
 
     const costInDolar = productReferences.reduce(
-      (total: number, reference: ProductReference) => {
+      (total: Decimal, reference: ProductReference) => {
         const { parentId, amount, percentage } = reference;
 
         if (parentId instanceof mongoose.Types.ObjectId)
@@ -277,27 +284,29 @@ export class ProductReferenceService {
 
         const { cost, currencyType } = parentId;
 
-        let toSum = cost * percentage * amount;
+        let toSum = new Decimal(cost).mul(percentage).mul(amount);
 
         if (currencyType == CurrencyType.EUR)
-          toSum = (toSum * foreignExchange.euro) / foreignExchange.dolar;
+          toSum = new Decimal(toSum)
+            .mul(foreignExchange.euro)
+            .div(foreignExchange.dolar);
 
         if (currencyType == CurrencyType.BSF)
-          toSum = toSum / foreignExchange.dolar;
+          toSum = new Decimal(toSum).div(foreignExchange.dolar);
 
-        return total + toSum;
+        return new Decimal(total).add(toSum);
       },
-      0,
+      new Decimal(0),
     );
 
     const costInCurrencyType =
       product.currencyType == CurrencyType.EUR
-        ? (costInDolar * foreignExchange.dolar) / foreignExchange.euro
+        ? costInDolar.mul(foreignExchange.dolar).div(foreignExchange.euro)
         : product.currencyType == CurrencyType.BSF
-          ? costInDolar * foreignExchange.dolar
+          ? costInDolar.mul(foreignExchange.dolar)
           : costInDolar;
 
-    return costInCurrencyType;
+    return costInCurrencyType.toNumber();
   }
 
   private getIdOfObject(obj: unknown): string {
