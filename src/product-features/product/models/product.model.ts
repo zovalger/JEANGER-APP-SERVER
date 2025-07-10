@@ -45,7 +45,7 @@ export class Product {
   @Prop({ type: Boolean, default: false })
   favorite: boolean;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
   createdBy: mongoose.Types.ObjectId;
 
   @Prop()

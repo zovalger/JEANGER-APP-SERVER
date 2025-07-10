@@ -10,13 +10,18 @@ import {
   QueryProductReferencesDto,
   UpdateProductReferenceDto,
 } from '../dto';
-import { ProductDocument, ProductReference } from '../models';
+import {
+  ProductDocument,
+  ProductReference,
+  ProductReferenceDocument,
+} from '../models';
 import mongoose, { Document, Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { ProductService } from './product.service';
 import { Messages, ModuleItems } from 'src/common/providers/Messages';
 import { ForeignExchangeService } from 'src/foreign-exchange/foreign-exchange.service';
 import { CurrencyType } from 'src/common/enums/currency-type.enum';
+import { SystemRequirementsDto } from 'src/common/dto/system-requirements.dto';
 
 @Injectable()
 export class ProductReferenceService {
@@ -29,7 +34,12 @@ export class ProductReferenceService {
     private readonly productReferenceModel: Model<ProductReference>,
   ) {}
 
-  async create(createProductReferenceDto: CreateProductReferenceDto) {
+  async create(
+    createProductReferenceDto: CreateProductReferenceDto,
+    systemRequirementsDto: SystemRequirementsDto,
+  ) {
+    const { userId } = systemRequirementsDto;
+
     const { parentId, childId } = createProductReferenceDto;
 
     const oldReference = await this.productReferenceModel.findOne({
@@ -44,9 +54,10 @@ export class ProductReferenceService {
         createProductReferenceDto,
       );
 
-    const productReference = new this.productReferenceModel(
-      createProductReferenceDto,
-    );
+    const productReference = new this.productReferenceModel({
+      ...createProductReferenceDto,
+      createdBy: userId,
+    });
 
     await productReference.save();
 
@@ -70,10 +81,22 @@ export class ProductReferenceService {
     return productReference;
   };
 
-  findAll = async (queryProductReferencesDto: QueryProductReferencesDto) => {
-    const productsReferences = await this.productReferenceModel
+  findAll = async (
+    queryProductReferencesDto: QueryProductReferencesDto,
+    populateFields?: (keyof ProductReferenceDocument)[],
+  ) => {
+    let query = this.productReferenceModel
       .find(queryProductReferencesDto)
       .sort({ name: 1 });
+
+    // Si se especifican campos para el populate, se aplican
+    if (populateFields && populateFields.length > 0) {
+      populateFields.forEach((field) => {
+        query = query.populate(field);
+      });
+    }
+
+    const productsReferences = await query;
 
     return productsReferences;
   };

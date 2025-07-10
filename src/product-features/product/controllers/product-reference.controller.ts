@@ -14,7 +14,8 @@ import {
   QueryProductReferencesDto,
   UpdateProductReferenceDto,
 } from '../dto';
-import { Auth } from 'src/user-features/auth/decorators';
+import { Auth, GetUser } from 'src/user-features/auth/decorators';
+import { UserDocument } from 'src/user-features/user/models/user.model';
 
 @Controller('product-reference')
 export class ProductReferenceController {
@@ -24,9 +25,13 @@ export class ProductReferenceController {
 
   @Post()
   @Auth()
-  async create(@Body() createProductReferenceDto: CreateProductReferenceDto) {
+  async create(
+    @Body() createProductReferenceDto: CreateProductReferenceDto,
+    @GetUser() user: UserDocument,
+  ) {
     const productReference = await this.productReferenceService.create(
       createProductReferenceDto,
+      { userId: user._id.toString() },
     );
 
     return { data: productReference };

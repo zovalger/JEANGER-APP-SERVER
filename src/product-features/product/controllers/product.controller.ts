@@ -9,8 +9,9 @@ import {
 } from '@nestjs/common';
 import { ProductService } from '../services/product.service';
 import { CreateProductDto } from '../dto/create-product.dto';
-import { UpdateProductDto } from '../dto/update-product.dto';
-import { Auth } from 'src/user-features/auth/decorators';
+import { UpdateProductFromClientDto } from '../dto/update-product-from-client.dto';
+import { Auth, GetUser } from 'src/user-features/auth/decorators';
+import { UserDocument } from 'src/user-features/user/models/user.model';
 
 @Controller('product')
 export class ProductController {
@@ -18,8 +19,13 @@ export class ProductController {
 
   @Post()
   @Auth()
-  async create(@Body() createProductDto: CreateProductDto) {
-    const product = await this.productService.create(createProductDto);
+  async create(
+    @Body() createProductDto: CreateProductDto,
+    @GetUser() user: UserDocument,
+  ) {
+    const product = await this.productService.create(createProductDto, {
+      userId: user._id.toString(),
+    });
     return { data: product };
   }
 
@@ -41,7 +47,7 @@ export class ProductController {
   @Auth()
   async update(
     @Param('id') id: string,
-    @Body() updateProductDto: UpdateProductDto,
+    @Body() updateProductDto: UpdateProductFromClientDto,
   ) {
     const product = await this.productService.update(id, updateProductDto);
     return { data: product };

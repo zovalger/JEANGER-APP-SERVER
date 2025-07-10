@@ -5,11 +5,20 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { Messages, ModuleItems } from 'src/common/providers/Messages';
-import { CreateProductDto, UpdateProductDto } from '../dto';
-import { Product } from '../models';
+import {
+  CreateProductDto,
+  UpdateProductDto,
+  UpdateProductFromClientDto,
+} from '../dto';
+import { Product, ProductDocument } from '../models';
 import { ProductReferenceService } from './product-reference.service';
+import {
+  strToUniqueWordArrayHelper,
+  uniqueValuesArrayHelper,
+} from '../helpers';
+import { SystemRequirementsDto } from 'src/common/dto/system-requirements.dto';
 
 @Injectable()
 export class ProductService {
@@ -21,10 +30,16 @@ export class ProductService {
     private readonly productModel: Model<Product>,
   ) {}
 
-  async create(createProductDto: CreateProductDto) {
-    console.log(createProductDto);
+  async create(
+    createProductDto: CreateProductDto,
+    systemRequirementsDto: SystemRequirementsDto,
+  ) {
+    const { userId } = systemRequirementsDto;
 
-    const product = new this.productModel(createProductDto);
+    const product = new this.productModel({
+      ...createProductDto,
+      createdBy: userId,
+    });
 
     await product.save();
 
@@ -58,7 +73,7 @@ export class ProductService {
 
   async update(
     id: string,
-    updateProductDto: UpdateProductDto,
+    updateProductDto: UpdateProductFromClientDto,
     updateFromReferences = false,
   ) {
     const rest = { ...updateProductDto, cost: undefined };
@@ -72,14 +87,13 @@ export class ProductService {
       if (hasParents) toUpdate = rest;
     }
 
-    const product = await this.productModel.findByIdAndUpdate(id, toUpdate, {
-      new: true,
-    });
+    const productOldVersion = await this.findOne(id);
 
-    if (!product)
-      throw new BadRequestException(
-        Messages.error.notFound(ModuleItems.product),
-      );
+    toUpdate = this.updateKeywords(productOldVersion, toUpdate);
+
+    const product = (await this.productModel.findByIdAndUpdate(id, toUpdate, {
+      new: true,
+    })) as ProductDocument;
 
     await this.updateChildrenDecision(
       id,
@@ -88,6 +102,45 @@ export class ProductService {
     );
 
     return product;
+  }
+
+  private updateKeywords(
+    product: ProductDocument,
+    updateProductDto: UpdateProductDto,
+  ): UpdateProductDto {
+    const { keywords, name } = updateProductDto;
+
+    if (!keywords && !name) return updateProductDto;
+
+    const newData = { ...updateProductDto };
+
+    let newAll: string[] = [];
+
+    if (name && product.name !== name) {
+      const arr = strToUniqueWordArrayHelper(name);
+      newData.autoKeywords = arr;
+      newAll = [...newAll, ...arr];
+    } else {
+      newAll = [...product.autoKeywords];
+    }
+
+    const keywordsStr = keywords?.join() || null;
+    const currentKeywordsStr = product.keywords.join();
+
+    if (
+      keywords &&
+      keywordsStr !== null &&
+      keywordsStr !== currentKeywordsStr
+    ) {
+      newData.keywords = keywords;
+      newAll = [...newAll, ...keywords];
+    } else {
+      newAll = [...newAll, ...product.keywords];
+    }
+
+    newData.allKeywords = uniqueValuesArrayHelper(newAll);
+
+    return newData;
   }
 
   private async updateChildrenDecision(
@@ -125,9 +178,22 @@ export class ProductService {
   // }
 
   async remove(id: string) {
-    const childs = await this.productReferenceService.findAll({ parentId: id });
+    const childs = await this.productReferenceService.findAll(
+      { parentId: id },
+      ['parentId'],
+    );
 
-    if (childs && childs.length) return;
+    if (childs && childs.length) {
+      const names = childs.map((item) =>
+        item.parentId instanceof mongoose.Types.ObjectId
+          ? item.parentId.toString()
+          : item.parentId.name,
+      );
+
+      throw new BadRequestException(
+        Messages.error.onDeleteProductHasChilds(names),
+      );
+    }
 
     const parents = await this.productReferenceService.findAll({ childId: id });
 

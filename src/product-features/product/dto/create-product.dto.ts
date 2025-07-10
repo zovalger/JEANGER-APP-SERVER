@@ -28,6 +28,7 @@ export class CreateProductDto {
   @IsEnum(CurrencyType)
   currencyType: CurrencyType;
 
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   @Transform(({ value }: TransformFnParams) => {
@@ -63,15 +64,10 @@ export class CreateProductDto {
   @Transform(({ obj }: TransformFnParams) => {
     if (typeof obj !== 'object') return;
 
-    const keywords: string[] = obj?.keywords;
+    const keywords: string[] = obj?.keywords || [];
 
     const autoKeywords =
-      typeof obj?.name === 'string'
-        ? strToUniqueWordArrayHelper(obj.name)
-        : null;
-
-    if (!(keywords instanceof Array) || !(autoKeywords instanceof Array))
-      return;
+      typeof obj?.name === 'string' ? strToUniqueWordArrayHelper(obj.name) : [];
 
     const toSet: string[] = [...keywords];
 
