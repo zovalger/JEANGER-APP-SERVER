@@ -91,6 +91,8 @@ export class ProductService {
 
     toUpdate = this.updateKeywords(productOldVersion, toUpdate);
 
+    toUpdate = await this.updateCostByCurrencyType(productOldVersion, toUpdate);
+
     const product = (await this.productModel.findByIdAndUpdate(id, toUpdate, {
       new: true,
     })) as ProductDocument;
@@ -143,16 +145,39 @@ export class ProductService {
     return newData;
   }
 
+  // todo: mejorar esta funcionalidad para que no hayan tantas consultas
+  private async updateCostByCurrencyType(
+    product: ProductDocument,
+    updateProductDto: UpdateProductDto,
+  ): Promise<UpdateProductDto> {
+    if (!updateProductDto.currencyType) return updateProductDto;
+
+    const has = await this.productReferenceService.hasParentReferences(
+      product._id.toString(),
+    );
+
+    if (!has) return updateProductDto;
+
+    product.currencyType = updateProductDto.currencyType;
+
+    const cost =
+      await this.productReferenceService.getCost_by_References(product);
+
+    const newData = { ...updateProductDto, cost };
+
+    return newData;
+  }
+
   private async updateChildrenDecision(
     id: string,
     updateProductDto: UpdateProductDto,
     updateFromReferences = false,
   ) {
-    const { cost } = updateProductDto;
+    const { cost, currencyType } = updateProductDto;
 
     if (updateFromReferences) return;
 
-    if (cost == undefined) return;
+    if (cost == undefined && !currencyType) return;
 
     const hasChilds =
       await this.productReferenceService.hasChildsReferences(id);

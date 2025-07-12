@@ -39,10 +39,14 @@ export class Messages {
 
     whenObtaining: (item: ModuleItems) => `error al intentar obtener ${item}`,
     whenObtainingProfile: () => 'whenObtainingProfile',
+
     onDeleteForeignExchange: () =>
       'no se puede eliminar debido a que el registro de divisas no fue creado por un usuario',
 
+    onCircularProductReference: () =>
+      `no se puede crear la referencia por que hay dependecia circular o ya existe`,
+
     onDeleteProductHasChilds: (names: string[]) =>
-      `no se puede eliminar debido a que el producto referencias estan en las referencias de (${names.join(', ')})`,
+      `no se puede eliminar debido a referencias existentes con (${names.join(', ')})`,
   };
 }

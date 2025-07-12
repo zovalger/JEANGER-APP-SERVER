@@ -1,6 +1,6 @@
-import { PartialType } from '@nestjs/mapped-types';
+import { PartialType, PickType } from '@nestjs/mapped-types';
 import { CreateProductReferenceDto } from './create-product-reference.dto';
 
 export class UpdateProductReferenceDto extends PartialType(
-  CreateProductReferenceDto,
+  PickType(CreateProductReferenceDto, ['amount', 'percentage']),
 ) {}

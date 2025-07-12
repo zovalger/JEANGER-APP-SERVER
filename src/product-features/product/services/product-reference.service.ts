@@ -43,16 +43,11 @@ export class ProductReferenceService {
 
     const { parentId, childId } = createProductReferenceDto;
 
-    const oldReference = await this.productReferenceModel.findOne({
-      parentId,
-      childId,
-    });
+    const isPosible = await this.isPosible(parentId, childId);
 
-    // si existe se actualiza
-    if (oldReference)
-      return await this.update(
-        oldReference._id.toString(),
-        createProductReferenceDto,
+    if (!isPosible)
+      throw new BadRequestException(
+        Messages.error.onCircularProductReference(),
       );
 
     const productReference = new this.productReferenceModel({
@@ -108,7 +103,8 @@ export class ProductReferenceService {
     return productsReferences;
   };
 
-  getPosibleProductParents = async (childId: string) => {
+  // todo: hacer funcionar esto para que no hayan bucles de referencias
+  async getPosibleProductParents(childId: string) {
     const curretParents = await this.findAll({ childId });
 
     const noId = [
@@ -134,8 +130,12 @@ export class ProductReferenceService {
 
     const toParents = await this.productService.findAllExcept(noId);
 
-    return toParents.map((v) => v._id);
-  };
+    return toParents.map((v) => v._id.toString());
+  }
+
+  async isPosible(parentId: string, childId: string): Promise<boolean> {
+    return (await this.getPosibleProductParents(childId)).includes(parentId);
+  }
 
   // ****************************************************************************
   // 										              actualizar
@@ -205,9 +205,11 @@ export class ProductReferenceService {
   async remove(id: string, recursive = true) {
     const ref = await this.findOne(id);
 
-    await this.productReferenceModel.deleteOne({
-      id,
-    });
+    await ref.deleteOne();
+
+    // await this.productReferenceModel.deleteOne({
+    //   _id: id,
+    // });
 
     const childId = this.getIdOfObject(ref.childId);
 
@@ -262,13 +264,19 @@ export class ProductReferenceService {
   };
 
   // devuelve el monto en dolares
-  private async getCost_by_References(productId: string): Promise<number> {
-    const product = await this.productService.findOne(productId);
+  async getCost_by_References(
+    productId: string | ProductDocument,
+  ): Promise<number> {
+    const product =
+      typeof productId == 'string'
+        ? await this.productService.findOne(productId)
+        : productId;
+
     const foreignExchange = await this.foreignExchangeService.last();
 
     const productReferences = await this.productReferenceModel
       .find({
-        childId: productId,
+        childId: product._id,
       })
       .populate<{ parentId: ProductDocument }>('parentId');
 
