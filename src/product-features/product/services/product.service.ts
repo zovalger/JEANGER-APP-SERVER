@@ -14,11 +14,9 @@ import {
 } from '../dto';
 import { Product, ProductDocument } from '../models';
 import { ProductReferenceService } from './product-reference.service';
-import {
-  strToUniqueWordArrayHelper,
-  uniqueValuesArrayHelper,
-} from '../helpers';
+import { strToUniqueWordArrayHelper } from '../helpers';
 import { SystemRequirementsDto } from 'src/common/dto/system-requirements.dto';
+import { uniqueValuesArrayHelper } from 'src/common/helpers';
 
 @Injectable()
 export class ProductService {
