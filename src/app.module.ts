@@ -7,6 +7,7 @@ import { JoiValidationsSchema } from './config/joi.validation';
 import { CommonModule } from './common/common.module';
 import { ProductFeaturesModule } from './product-features/product-features.module';
 import { ForeignExchangeModule } from './foreign-exchange/foreign-exchange.module';
+import { BillModule } from './bill/bill.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ForeignExchangeModule } from './foreign-exchange/foreign-exchange.modul
     UserFeaturesModule,
     ProductFeaturesModule,
     ForeignExchangeModule,
+    BillModule,
   ],
   controllers: [],
   providers: [],
