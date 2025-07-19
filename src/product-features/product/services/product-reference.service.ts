@@ -23,7 +23,6 @@ import { ForeignExchangeService } from 'src/foreign-exchange/foreign-exchange.se
 import { CurrencyType } from 'src/common/enums/currency-type.enum';
 import { SystemRequirementsDto } from 'src/common/dto/system-requirements.dto';
 import Decimal from 'decimal.js';
-import { uniqueValuesArrayHelper } from 'src/common/helpers';
 
 @Injectable()
 export class ProductReferenceService {
@@ -44,7 +43,7 @@ export class ProductReferenceService {
 
     const { parentId, childId } = createProductReferenceDto;
 
-    const isPosible = await this.isValidReference(parentId, childId);
+    const isPosible = await this.isPosibleParent(parentId, childId);
 
     if (!isPosible)
       throw new BadRequestException(
@@ -106,39 +105,35 @@ export class ProductReferenceService {
 
   // todo: hacer funcionar esto para que no hayan bucles de referencias
   async getPosibleProductParents(childId: string) {
-    const s = await this.productReferenceModel.find({
-      $or: [{ parentId: childId }, { childId }],
-    });
+    const curretParents = await this.findAll({ childId });
 
-    const c = s.map((v) => this.getIdOfObject(v.childId));
-    const p = s.map((v) => this.getIdOfObject(v.parentId));
+    const noId = [
+      childId,
+      ...curretParents.map((v) => this.getIdOfObject(v.parentId)),
+    ];
 
-    const excludeIds = uniqueValuesArrayHelper([childId, ...c, ...p]);
+    for (let index = 1; index < noId.length; index++) {
+      const p = noId[index];
 
-    const getchildsRecursive = async (b: string[]): Promise<string[]> => {
-      const aa: string[] = [...b];
+      const afterParent = await this.productReferenceModel.find({
+        childId: p,
+      });
 
-      for (const element of b) {
-        const childs = (
-          await this.productReferenceModel.find({
-            parentId: element,
-          })
-        ).map((v) => this.getIdOfObject(v.childId));
+      afterParent.forEach((pr) => {
+        const found = noId.find(
+          (id) => id.toString() === this.getIdOfObject(pr.parentId),
+        );
 
-        aa.push(...childs, ...(await getchildsRecursive(childs)));
-      }
+        if (!found) noId.push(this.getIdOfObject(pr.parentId));
+      });
+    }
 
-      return uniqueValuesArrayHelper(aa);
-    };
-
-    const toParents = await this.productService.findAllExcept(
-      await getchildsRecursive(excludeIds),
-    );
+    const toParents = await this.productService.findAllExcept(noId);
 
     return toParents.map((v) => v._id.toString());
   }
 
-  async isValidReference(parentId: string, childId: string): Promise<boolean> {
+  async isPosibleParent(parentId: string, childId: string): Promise<boolean> {
     return (await this.getPosibleProductParents(childId)).includes(parentId);
   }
 
