@@ -13,7 +13,7 @@ export class BillGateway {
 
   @SubscribeMessage('createBill')
   create(@MessageBody() createBillDto: CreateBillDto) {
-    return this.billService.create(createBillDto);
+    // return this.billService.create(createBillDto);
   }
 
   @SubscribeMessage('findAllBill')
@@ -22,17 +22,17 @@ export class BillGateway {
   }
 
   @SubscribeMessage('findOneBill')
-  findOne(@MessageBody() id: number) {
+  findOne(@MessageBody() id: string) {
     return this.billService.findOne(id);
   }
 
   @SubscribeMessage('updateBill')
   update(@MessageBody() updateBillDto: UpdateBillDto) {
-    return this.billService.update(updateBillDto.id, updateBillDto);
+    return this.billService.update(updateBillDto._id, updateBillDto);
   }
 
   @SubscribeMessage('removeBill')
-  remove(@MessageBody() id: number) {
+  remove(@MessageBody() id: string) {
     return this.billService.remove(id);
   }
 }
