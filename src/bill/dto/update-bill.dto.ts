@@ -1,13 +1,4 @@
-import { IsMongoId, IsString } from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateBillDto } from './create-bill.dto';
 
-export class UpdateBillDto {
-  @IsMongoId()
-  _id: string;
-
-  @IsString()
-  name: string;
-
-  // @IsString()
-  // @IsMongoId()
-  // foreignExchange: string;
-}
+export class UpdateBillDto extends PartialType(CreateBillDto) {}

@@ -18,21 +18,21 @@ export class BillGateway {
 
   @SubscribeMessage('findAllBill')
   findAll() {
-    return this.billService.findAll();
+    // return this.billService.findAll();
   }
 
   @SubscribeMessage('findOneBill')
   findOne(@MessageBody() id: string) {
-    return this.billService.findOne(id);
+    // return this.billService.findOne(id);
   }
 
   @SubscribeMessage('updateBill')
   update(@MessageBody() updateBillDto: UpdateBillDto) {
-    return this.billService.update(updateBillDto._id, updateBillDto);
+    // return this.billService.update(updateBillDto._id, updateBillDto);
   }
 
   @SubscribeMessage('removeBill')
   remove(@MessageBody() id: string) {
-    return this.billService.remove(id);
+    // return this.billService.remove(id);
   }
 }

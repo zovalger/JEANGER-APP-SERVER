@@ -1,11 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CreateBillDto } from './dto/create-bill.dto';
-import { UpdateBillDto } from './dto/update-bill.dto';
 import { SystemRequirementsDto } from 'src/common/dto/system-requirements.dto';
-import { Bill, BillModel } from './models';
+import { Bill, BillDocument, BillModel } from './models';
 import { ForeignExchangeService } from 'src/foreign-exchange/foreign-exchange.service';
+import { Messages, ModuleItems } from 'src/common/providers/Messages';
+import { CreateBillDto, SetBillItemDto, UpdateBillDto } from './dto';
+import { billHelper } from './helpers';
 
 @Injectable()
 export class BillService {
@@ -18,11 +19,8 @@ export class BillService {
   async create(
     createBillDto: CreateBillDto,
     systemRequirementsDto: SystemRequirementsDto,
-  ) {
+  ): Promise<BillDocument> {
     const { userId } = systemRequirementsDto;
-    // const { foreignExchange } = createBillDto;
-
-    // const f = foreignExchange || (await this.foreignExchangeService.last());
 
     const bill = new this.billModel({
       ...createBillDto,
@@ -34,19 +32,66 @@ export class BillService {
     return bill;
   }
 
-  findAll() {
-    return `This action returns all bill`;
+  async findAll() {
+    const bills = await this.billModel.find().sort({ name: 1 });
+
+    return bills;
   }
 
-  findOne(id: string) {
-    return `This action returns a #${id} bill`;
+  async findOne(id: string) {
+    const bill = await this.billModel.findById(id);
+
+    if (!bill)
+      throw new BadRequestException(Messages.error.notFound(ModuleItems.bill));
+
+    return bill;
   }
 
-  update(id: string, updateBillDto: UpdateBillDto) {
-    return `This action updates a #${id} bill`;
+  async update(
+    id: string,
+    updateBillDto: UpdateBillDto,
+    systemRequirementsDto: SystemRequirementsDto,
+  ) {
+    await this.findOne(id);
+
+    const bill = await this.billModel.findByIdAndUpdate(id, updateBillDto, {
+      new: true,
+    });
+
+    return bill;
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} bill`;
+  // todo: update items individual
+  async setItem(
+    billId: string,
+    setBillItemDto: SetBillItemDto,
+    systemRequirementsDto: SystemRequirementsDto,
+  ) {
+    const { userId } = systemRequirementsDto;
+
+    if (!userId)
+      throw new BadRequestException('todo: mensaje usuario no encontrado');
+
+    const b = await this.findOne(billId);
+    const f = await this.foreignExchangeService.last();
+
+    const a = billHelper.updateBillItem(
+      b.items,
+      { ...setBillItemDto, createdBy: userId },
+      f,
+      {
+        setQuantity: true,
+      },
+    );
+
+    await this.update(billId, a, systemRequirementsDto);
+
+    return setBillItemDto;
+  }
+
+  async remove(id: string) {
+    const result = await this.billModel.deleteOne({ _id: id });
+
+    return !!result.deletedCount;
   }
 }

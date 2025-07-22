@@ -9,9 +9,9 @@ import {
 import { User } from 'src/user-features/user/models/user.model';
 
 @Schema({ timestamps: true })
-export class Item {
+export class BillItem {
   @Prop({ type: mongoose.Schema.Types.ObjectId, required: true })
-  productId: mongoose.Schema.Types.ObjectId;
+  productId: mongoose.Types.ObjectId;
 
   @Prop({ type: Number, default: 1 })
   quantity: number;
@@ -56,10 +56,10 @@ export class Bill {
   name: string;
 
   @Prop({
-    type: [Item],
+    type: [BillItem],
     default: [],
   })
-  items: Item[];
+  items: BillItem[];
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
