@@ -46,7 +46,11 @@ export class ForeignExchangeService {
   }
 
   async last() {
-    return await this.foreignExchangeModel.findOne().sort({ createdAt: -1 });
+    const lastForeignExchange = await this.foreignExchangeModel
+      .findOne()
+      .sort({ createdAt: -1 });
+
+    return lastForeignExchange ? lastForeignExchange : await this.webScraping();
   }
 
   async findOne(id: string) {

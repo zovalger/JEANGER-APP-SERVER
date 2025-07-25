@@ -1,8 +1,9 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { Auth, GetUser } from 'src/user-features/auth/decorators';
 import { UserDocument } from 'src/user-features/user/models/user.model';
 import { CreateBillDto } from './dto/create-bill.dto';
 import { BillService } from './bill.service';
+import { SetBillItemFromClientDto } from './dto/set-bill-item-from-client.dto';
 
 @Controller('bill')
 export class BillController {
@@ -20,12 +21,12 @@ export class BillController {
     return { data: bill };
   }
 
-  // @Get()
-  // @Auth()
-  // async findAll() {
-  //   const bills = await this.billService.findAll();
-  //   return { data: bills };
-  // }
+  @Get()
+  @Auth()
+  async findAll() {
+    const bills = await this.billService.findAll();
+    return { data: bills };
+  }
 
   // @Get(':id')
   // @Auth()
@@ -43,6 +44,20 @@ export class BillController {
   //   const bill = await this.billService.update(id, updateBillDto);
   //   return { data: bill };
   // }
+
+  @Patch(':id/item')
+  @Auth()
+  async update(
+    @Param('id') id: string,
+    @Body() setBillItemFromClientDto: SetBillItemFromClientDto,
+    @GetUser() user: UserDocument,
+  ) {
+    const item = await this.billService.setItem(id, setBillItemFromClientDto, {
+      userId: user._id.toString(),
+    });
+
+    return { data: item };
+  }
 
   // @Delete(':id')
   // @Auth()

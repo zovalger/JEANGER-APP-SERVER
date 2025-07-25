@@ -12,10 +12,11 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CurrencyType } from 'src/common/enums/currency-type.enum';
+import mongoose from 'mongoose';
 
 class ItemDto {
   @IsMongoId()
-  productId: string;
+  productId: string | mongoose.Types.ObjectId;
 
   @IsNumber()
   @IsPositive()
@@ -29,10 +30,10 @@ class ItemDto {
   currencyType: CurrencyType;
 
   @IsDateString()
-  createdAt: Date;
+  createdAt: Date | string;
 
   @IsDateString()
-  updatedAt: Date;
+  updatedAt: Date | string;
 }
 
 class TotalsDto {
@@ -66,4 +67,12 @@ export class CreateBillDto {
   @ValidateNested()
   @Type(() => TotalsDto)
   totals?: TotalsDto;
+
+  @IsOptional()
+  @IsDateString()
+  createdAt: Date | string;
+
+  @IsOptional()
+  @IsDateString()
+  updatedAt: Date | string;
 }

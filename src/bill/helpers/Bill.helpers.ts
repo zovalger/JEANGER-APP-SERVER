@@ -1,35 +1,19 @@
-import { ForeignExchange } from 'src/foreign-exchange/models/foreign-exchange.model';
+import {
+  ForeignExchange,
+  ForeignExchangeDocument,
+} from 'src/foreign-exchange/models/foreign-exchange.model';
 import { CurrencyType } from 'src/common/enums/currency-type.enum';
 import { IBill, IBillItem } from '../interfaces/bill.interface';
 
-const calculateTotals = (
-  items: IBillItem[],
-  foreignExchange: ForeignExchange,
-) => {
-  const USD = items.reduce((total: number, item: IBillItem) => {
-    const { cost, currencyType, quantity } = item;
-
-    let toSum = cost * quantity;
-
-    if (currencyType === CurrencyType.EUR)
-      toSum = (toSum * foreignExchange.euro) / foreignExchange.dolar;
-    if (currencyType === CurrencyType.BSF)
-      toSum = toSum / foreignExchange.dolar;
-
-    return total + toSum;
-  }, 0);
-
-  return { USD, BSF: USD * foreignExchange.dolar };
-};
-
+interface a extends Pick<IBill, 'items' | 'totals'> {
+  updatedItem?: IBillItem;
+}
 export const updateBillItem = (
   items: IBillItem[],
   billItem: IBillItem,
-  foreignExchange: ForeignExchange,
+  foreignExchange: ForeignExchangeDocument,
   options?: { setQuantity?: boolean },
-): Pick<IBill, 'items' | 'totals'> => {
-  const foreignExchangeCurrent = foreignExchange;
-
+): a => {
   let newItems = items;
 
   const oldBillItem = items.find(
@@ -46,9 +30,9 @@ export const updateBillItem = (
   if (!oldBillItem && newQuantity > 0) {
     newItems = [...newItems, billItem];
   } else if (!oldBillItem) {
-    const totals = calculateTotals(newItems, foreignExchangeCurrent);
+    const totals = calculateTotals(newItems, foreignExchange);
 
-    return { items: newItems, totals };
+    return { items: newItems, totals, updatedItem: billItem };
   }
 
   // quitarlo
@@ -65,9 +49,9 @@ export const updateBillItem = (
     );
   }
 
-  const totals = calculateTotals(newItems, foreignExchangeCurrent);
+  const totals = calculateTotals(newItems, foreignExchange);
 
-  return { items: newItems, totals };
+  return { items: newItems, totals, updatedItem: billItem };
 };
 
 // todo: comentar paso
@@ -128,3 +112,42 @@ export const updateBillItem = (
 
 //   return calculateTotals(currentBill, foreignExchange || undefined);
 // };
+
+const calculateTotals = (
+  items: IBillItem[],
+  foreignExchange: ForeignExchange,
+) => {
+  const USD = items.reduce((total: number, item: IBillItem) => {
+    const { cost, currencyType, quantity } = item;
+
+    let toSum = cost * quantity;
+
+    if (currencyType === CurrencyType.EUR)
+      toSum = (toSum * foreignExchange.euro) / foreignExchange.dolar;
+    if (currencyType === CurrencyType.BSF)
+      toSum = toSum / foreignExchange.dolar;
+
+    return total + toSum;
+  }, 0);
+
+  return { USD, BSF: USD * foreignExchange.dolar };
+};
+
+export const isIncomingItemMoreRecent = (
+  old: string | Date | undefined,
+  current: string | Date | undefined,
+): boolean => {
+  if (!old) return true;
+  if (!current) return false;
+
+  const o = typeof old === 'string' ? new Date(old) : old;
+  const n = typeof current === 'string' ? new Date(current) : current;
+
+  return n.getTime() > o.getTime();
+};
+
+export const getItemInBillList = (
+  productId: string,
+  items: IBillItem[],
+): IBillItem | undefined =>
+  items.find((item) => item.productId.toString() === productId);

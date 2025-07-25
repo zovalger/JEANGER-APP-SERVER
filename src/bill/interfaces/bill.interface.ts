@@ -12,9 +12,9 @@ export interface IBillItem {
 
   createdBy: mongoose.Types.ObjectId | string;
 
-  createdAt: Date;
+  createdAt: Date | string;
 
-  updatedAt: Date;
+  updatedAt: Date | string;
 }
 
 export interface ITotals {
@@ -38,7 +38,7 @@ export interface IBill {
 
   createdBy: mongoose.Types.ObjectId | string;
 
-  createdAt: Date;
+  createdAt: Date | string;
 
-  updatedAt: Date;
+  updatedAt: Date | string;
 }

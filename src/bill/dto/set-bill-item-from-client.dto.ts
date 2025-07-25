@@ -7,7 +7,7 @@ import {
 } from 'class-validator';
 import { CurrencyType } from 'src/common/enums/currency-type.enum';
 
-export class SetBillItemDto {
+export class SetBillItemFromClientDto {
   @IsMongoId()
   productId: string;
 

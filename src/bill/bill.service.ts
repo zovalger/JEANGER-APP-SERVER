@@ -7,6 +7,10 @@ import { ForeignExchangeService } from 'src/foreign-exchange/foreign-exchange.se
 import { Messages, ModuleItems } from 'src/common/providers/Messages';
 import { CreateBillDto, SetBillItemDto, UpdateBillDto } from './dto';
 import { billHelper } from './helpers';
+import {
+  getItemInBillList,
+  isIncomingItemMoreRecent,
+} from './helpers/Bill.helpers';
 
 @Injectable()
 export class BillService {
@@ -72,21 +76,28 @@ export class BillService {
     if (!userId)
       throw new BadRequestException('todo: mensaje usuario no encontrado');
 
-    const b = await this.findOne(billId);
-    const f = await this.foreignExchangeService.last();
+    const bill = await this.findOne(billId);
+    const foreignExchange = await this.foreignExchangeService.last();
 
-    const a = billHelper.updateBillItem(
-      b.items,
-      { ...setBillItemDto, createdBy: userId },
-      f,
-      {
-        setQuantity: true,
-      },
+    //todo: ver si el guardado es mas reciente que el que viene llegando
+    const IsMoreRecent = isIncomingItemMoreRecent(
+      getItemInBillList(setBillItemDto.productId, bill.items)?.updatedAt,
+      setBillItemDto?.updatedAt,
     );
 
-    await this.update(billId, a, systemRequirementsDto);
+    if (!IsMoreRecent) throw new BadRequestException('no actualizado');
 
-    return setBillItemDto;
+    const { totals, items, updatedItem } = billHelper.updateBillItem(
+      bill.items,
+      { ...setBillItemDto, createdBy: userId },
+      foreignExchange,
+      { setQuantity: true },
+    );
+
+    await this.update(billId, { totals, items }, systemRequirementsDto);
+
+    // si no hay nada no reenviar
+    return updatedItem;
   }
 
   async remove(id: string) {
