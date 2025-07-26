@@ -4,12 +4,10 @@ import { UpdateProductSettingDto } from './dto/update-product-setting.dto';
 
 @Injectable()
 export class ProductSettingService {
+  constructor() {}
+
   create(createProductSettingDto: CreateProductSettingDto) {
     return 'This action adds a new productSetting';
-  }
-
-  findAll() {
-    return `This action returns all productSetting`;
   }
 
   findOne(id: number) {
@@ -18,9 +16,5 @@ export class ProductSettingService {
 
   update(id: number, updateProductSettingDto: UpdateProductSettingDto) {
     return `This action updates a #${id} productSetting`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} productSetting`;
   }
 }

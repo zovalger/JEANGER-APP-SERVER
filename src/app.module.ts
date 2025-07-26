@@ -8,6 +8,7 @@ import { CommonModule } from './common/common.module';
 import { ProductFeaturesModule } from './product-features/product-features.module';
 import { ForeignExchangeModule } from './foreign-exchange/foreign-exchange.module';
 import { BillModule } from './bill/bill.module';
+import { StopwatchModule } from './stopwatch/stopwatch.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { BillModule } from './bill/bill.module';
     ProductFeaturesModule,
     ForeignExchangeModule,
     BillModule,
+    StopwatchModule,
   ],
   controllers: [],
   providers: [],
