@@ -4,5 +4,6 @@ import { ProductSettingModule } from './product-setting/product-setting.module';
 
 @Module({
   imports: [ProductModule, ProductSettingModule],
+  exports: [ProductModule, ProductSettingModule],
 })
 export class ProductFeaturesModule {}

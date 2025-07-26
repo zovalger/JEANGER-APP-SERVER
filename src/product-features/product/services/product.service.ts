@@ -9,6 +9,7 @@ import mongoose, { Model } from 'mongoose';
 import { Messages, ModuleItems } from 'src/common/providers/Messages';
 import {
   CreateProductDto,
+  QueryProductsDto,
   UpdateProductDto,
   UpdateProductFromClientDto,
 } from '../dto';
@@ -44,10 +45,18 @@ export class ProductService {
     return product;
   }
 
-  async findAll() {
-    const products = await this.productModel.find().sort({ name: 1 });
+  async findAll(queryProductsDto: QueryProductsDto = {}) {
+    const filteredQuery = Object.fromEntries(
+      Object.entries(queryProductsDto).filter((a) => a[1] !== undefined),
+    );
 
-    return products;
+    const f = filteredQuery._id
+      ? { ...filteredQuery, _id: { $in: filteredQuery._id } }
+      : filteredQuery;
+
+    const promise = this.productModel.find(f).sort({ name: 1 });
+
+    return await promise;
   }
 
   async findAllExcept(id: string[]) {
