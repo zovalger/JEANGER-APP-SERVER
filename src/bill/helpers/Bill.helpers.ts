@@ -4,20 +4,22 @@ import {
 } from 'src/foreign-exchange/models/foreign-exchange.model';
 import { CurrencyType } from 'src/common/enums/currency-type.enum';
 import { IBill, IBillItem } from '../interfaces/bill.interface';
+import mongoose from 'mongoose';
 
-interface a extends Pick<IBill, 'items' | 'totals'> {
+interface BillHelperResponse extends Pick<IBill, 'items' | 'totals'> {
   updatedItem?: IBillItem;
 }
+
 export const updateBillItem = (
   items: IBillItem[],
   billItem: IBillItem,
   foreignExchange: ForeignExchangeDocument,
   options?: { setQuantity?: boolean },
-): a => {
+): BillHelperResponse => {
   let newItems = items;
 
   const oldBillItem = items.find(
-    (item) => item.productId === billItem.productId,
+    (item) => item.productId.toString() === billItem.productId.toString(),
   );
 
   const oldQuantity = oldBillItem ? oldBillItem.quantity : 0;
@@ -26,6 +28,12 @@ export const updateBillItem = (
     ? billItem.quantity
     : oldQuantity + billItem.quantity;
 
+  // error si se coloca directamente 0 o negativo
+  if (newQuantity <= 0)
+    throw new Error(
+      'no se puede colocar en negativo o en 0, use el boton de eliminar si desea eleminar el producto',
+    );
+
   // anadirlo
   if (!oldBillItem && newQuantity > 0) {
     newItems = [...newItems, billItem];
@@ -33,11 +41,6 @@ export const updateBillItem = (
     const totals = calculateTotals(newItems, foreignExchange);
 
     return { items: newItems, totals, updatedItem: billItem };
-  }
-
-  // quitarlo
-  if (newQuantity <= 0) {
-    newItems = newItems.filter((item) => item.productId !== billItem.productId);
   }
 
   // actualizarlo
@@ -54,64 +57,19 @@ export const updateBillItem = (
   return { items: newItems, totals, updatedItem: billItem };
 };
 
-// todo: comentar paso
-// export const setOneBillItem = (
-//   bill: Bill,
-//   billItem: BillItem,
-//   foreignExchange: ForeignExchange,
-// ): Bill => {
-//   const currentBill = bill;
-//   const foreignExchangeCurrent = foreignExchange;
+export const deleteItemInBill = (
+  items: IBillItem[],
+  productId: mongoose.Types.ObjectId | string,
+  foreignExchange: ForeignExchangeDocument,
+): BillHelperResponse => {
+  const newItems = items.filter(
+    (item) => item.productId.toString() !== productId.toString(),
+  );
 
-//   let newItems = currentBill.items;
+  const totals = calculateTotals(newItems, foreignExchange);
 
-//   const oldBillItem = currentBill.items.find(
-//     (item) => item.productId === billItem.productId,
-//   );
-
-//   const newQuantity = billItem.quantity;
-
-//   // todo: anadirlo
-
-//   if (!oldBillItem && newQuantity > 0) {
-//     newItems = [...newItems, billItem];
-//   } else if (!oldBillItem) return currentBill;
-
-//   // todo actualizarlo
-//   if (newQuantity > 0) {
-//     newItems = newItems.map((item) =>
-//       item.productId === billItem.productId
-//         ? { ...item, quantity: newQuantity }
-//         : item,
-//     );
-//   }
-
-//   const newBillWithTotals = calculateTotals(
-//     {
-//       ...currentBill,
-//       items: newItems,
-//     },
-//     foreignExchangeCurrent,
-//   );
-
-//   return newBillWithTotals;
-// };
-
-// export const deleteItemInBill = (
-//   bill: Bill,
-//   foreignExchange: ForeignExchange,
-//   productId: string,
-// ): Bill => {
-//   const currentBill = bill;
-
-//   const { items } = currentBill;
-
-//   currentBill.items = items.filter(
-//     (item) => item.productId.toString() !== productId,
-//   );
-
-//   return calculateTotals(currentBill, foreignExchange || undefined);
-// };
+  return { items: newItems, totals };
+};
 
 const calculateTotals = (
   items: IBillItem[],

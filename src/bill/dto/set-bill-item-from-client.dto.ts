@@ -1,29 +1,6 @@
-import {
-  IsDateString,
-  IsEnum,
-  IsMongoId,
-  IsNumber,
-  IsString,
-} from 'class-validator';
-import { CurrencyType } from 'src/common/enums/currency-type.enum';
+import { OmitType } from '@nestjs/mapped-types';
+import { SetBillItemDto } from './set-bill-item.dto';
 
-export class SetBillItemFromClientDto {
-  @IsMongoId()
-  productId: string;
-
-  @IsNumber()
-  quantity: number;
-
-  @IsNumber()
-  cost: number;
-
-  @IsString()
-  @IsEnum(CurrencyType)
-  currencyType: CurrencyType;
-
-  @IsDateString()
-  createdAt: string;
-
-  @IsDateString()
-  updatedAt: string;
-}
+export class SetBillItemFromClientDto extends OmitType(SetBillItemDto, [
+  'createdBy',
+]) {}

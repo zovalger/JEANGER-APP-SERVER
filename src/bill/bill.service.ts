@@ -5,17 +5,25 @@ import { SystemRequirementsDto } from 'src/common/dto/system-requirements.dto';
 import { Bill, BillDocument, BillModel } from './models';
 import { ForeignExchangeService } from 'src/foreign-exchange/foreign-exchange.service';
 import { Messages, ModuleItems } from 'src/common/providers/Messages';
-import { CreateBillDto, SetBillItemDto, UpdateBillDto } from './dto';
+import {
+  CreateBillDto,
+  DeleteBillItemDto,
+  SetBillItemDto,
+  UpdateBillDto,
+} from './dto';
 import { billHelper } from './helpers';
 import {
   getItemInBillList,
   isIncomingItemMoreRecent,
 } from './helpers/Bill.helpers';
+import { ProductService } from 'src/product-features/product/services';
 
 @Injectable()
 export class BillService {
   constructor(
     private readonly foreignExchangeService: ForeignExchangeService,
+    private readonly productService: ProductService,
+
     @InjectModel(BillModel.name)
     private readonly billModel: Model<Bill>,
   ) {}
@@ -25,11 +33,37 @@ export class BillService {
     systemRequirementsDto: SystemRequirementsDto,
   ): Promise<BillDocument> {
     const { userId } = systemRequirementsDto;
+    const { items } = createBillDto;
+    const toCreate = { ...createBillDto, createdBy: userId };
 
-    const bill = new this.billModel({
-      ...createBillDto,
-      createdBy: userId,
-    });
+    // verifica que los productos si existen
+    if (items) {
+      const products = await this.productService.findAll({
+        _id: items.map((i) => i.productId.toString()),
+      });
+
+      console.log(products);
+
+      toCreate.items = items.map((i) => {
+        const p = products.find(
+          (a) => i.productId.toString() === a._id.toString(),
+        );
+
+        if (!p)
+          throw new BadRequestException(
+            Messages.error.notFound(ModuleItems.product),
+          );
+
+        return {
+          ...i,
+          cost: p.cost,
+          currencyType: p.currencyType,
+          createdBy: userId,
+        };
+      });
+    }
+
+    const bill = new this.billModel(toCreate);
 
     await bill.save();
 
@@ -65,31 +99,35 @@ export class BillService {
     return bill;
   }
 
-  // todo: update items individual
+  async remove(id: string, systemRequirementsDto: SystemRequirementsDto) {
+    const result = await this.billModel.deleteOne({ _id: id });
+
+    return !!result.deletedCount;
+  }
+
   async setItem(
     billId: string,
     setBillItemDto: SetBillItemDto,
     systemRequirementsDto: SystemRequirementsDto,
   ) {
-    const { userId } = systemRequirementsDto;
-
-    if (!userId)
-      throw new BadRequestException('todo: mensaje usuario no encontrado');
-
     const bill = await this.findOne(billId);
     const foreignExchange = await this.foreignExchangeService.last();
+    const product = await this.productService.findOne(setBillItemDto.productId);
 
-    //todo: ver si el guardado es mas reciente que el que viene llegando
     const IsMoreRecent = isIncomingItemMoreRecent(
       getItemInBillList(setBillItemDto.productId, bill.items)?.updatedAt,
-      setBillItemDto?.updatedAt,
+      setBillItemDto.updatedAt,
     );
 
     if (!IsMoreRecent) throw new BadRequestException('no actualizado');
 
     const { totals, items, updatedItem } = billHelper.updateBillItem(
       bill.items,
-      { ...setBillItemDto, createdBy: userId },
+      {
+        ...setBillItemDto,
+        cost: product.cost,
+        currencyType: product.currencyType,
+      },
       foreignExchange,
       { setQuantity: true },
     );
@@ -100,9 +138,29 @@ export class BillService {
     return updatedItem;
   }
 
-  async remove(id: string) {
-    const result = await this.billModel.deleteOne({ _id: id });
+  async deleteItem(
+    billId: string,
+    deleteBillItemDto: DeleteBillItemDto,
+    systemRequirementsDto: SystemRequirementsDto,
+  ) {
+    const bill = await this.findOne(billId);
+    const foreignExchange = await this.foreignExchangeService.last();
 
-    return !!result.deletedCount;
+    const IsMoreRecent = isIncomingItemMoreRecent(
+      getItemInBillList(deleteBillItemDto.productId, bill.items)?.updatedAt,
+      deleteBillItemDto.updatedAt,
+    );
+
+    if (!IsMoreRecent) throw new BadRequestException('no actualizado');
+
+    const { totals, items } = billHelper.deleteItemInBill(
+      bill.items,
+      deleteBillItemDto.productId,
+      foreignExchange,
+    );
+
+    await this.update(billId, { totals, items }, systemRequirementsDto);
+
+    return true;
   }
 }

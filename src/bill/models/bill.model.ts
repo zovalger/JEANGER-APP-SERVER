@@ -8,7 +8,7 @@ import {
 } from 'src/foreign-exchange/models/foreign-exchange.model';
 import { User } from 'src/user-features/user/models/user.model';
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, _id: false })
 export class BillItem {
   @Prop({ type: mongoose.Schema.Types.ObjectId, required: true })
   productId: mongoose.Types.ObjectId;
@@ -36,7 +36,7 @@ export class BillItem {
   updatedAt: Date;
 }
 
-@Schema()
+@Schema({ _id: false })
 export class Totals {
   @Prop({ type: Number, default: 0 })
   BSF: number;
