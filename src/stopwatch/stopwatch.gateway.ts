@@ -1,15 +1,23 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody } from '@nestjs/websockets';
+import {
+  WebSocketGateway,
+  SubscribeMessage,
+  MessageBody,
+  ConnectedSocket,
+} from '@nestjs/websockets';
 import { StopwatchService } from './stopwatch.service';
-import { CreateStopwatchDto } from './dto/create-stopwatch.dto';
-import { UpdateStopwatchDto } from './dto/update-stopwatch.dto';
+import { CreateStopwatchDto, CreateStopwatchFromClientDto } from './dto';
+import { Socket } from 'socket.io';
 
 @WebSocketGateway()
 export class StopwatchGateway {
   constructor(private readonly stopwatchService: StopwatchService) {}
 
   @SubscribeMessage('createStopwatch')
-  create(@MessageBody() createStopwatchDto: CreateStopwatchDto) {
-    return this.stopwatchService.create(createStopwatchDto);
+  create(
+    @MessageBody() createStopwatchDto: CreateStopwatchDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    return createStopwatchDto;
   }
 
   @SubscribeMessage('findAllStopwatch')
@@ -18,17 +26,20 @@ export class StopwatchGateway {
   }
 
   @SubscribeMessage('findOneStopwatch')
-  findOne(@MessageBody() id: number) {
+  findOne(@MessageBody() id: string) {
     return this.stopwatchService.findOne(id);
   }
 
-  @SubscribeMessage('updateStopwatch')
-  update(@MessageBody() updateStopwatchDto: UpdateStopwatchDto) {
-    return this.stopwatchService.update(updateStopwatchDto.id, updateStopwatchDto);
-  }
+  // @SubscribeMessage('updateStopwatch')
+  // update(@MessageBody() updateStopwatchDto: UpdateStopwatchDto) {
+  //   // return this.stopwatchService.update(
+  //   //   updateStopwatchDto.id,
+  //   //   updateStopwatchDto,
+  //   // );
+  // }
 
   @SubscribeMessage('removeStopwatch')
-  remove(@MessageBody() id: number) {
+  remove(@MessageBody() id: string) {
     return this.stopwatchService.remove(id);
   }
 }

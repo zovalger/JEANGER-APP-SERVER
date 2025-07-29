@@ -1,26 +1,69 @@
-import { Injectable } from '@nestjs/common';
-import { CreateStopwatchDto } from './dto/create-stopwatch.dto';
-import { UpdateStopwatchDto } from './dto/update-stopwatch.dto';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { CreateStopwatchDto, UpdateStopwatchDto } from './dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Stopwatch, StopwatchDocument, StopwatchModel } from './models';
+import { Model } from 'mongoose';
+import { Messages, ModuleItems } from 'src/common/providers/Messages';
 
 @Injectable()
 export class StopwatchService {
-  create(createStopwatchDto: CreateStopwatchDto) {
-    return 'This action adds a new stopwatch';
+  constructor(
+    @InjectModel(StopwatchModel.name)
+    private readonly stopwatchModel: Model<Stopwatch>,
+  ) {}
+
+  async create(
+    createBillDto: CreateStopwatchDto,
+    // systemRequirementsDto: SystemRequirementsDto,
+  ): Promise<StopwatchDocument> {
+    // const { userId } = systemRequirementsDto;
+
+    const stopwatch = new this.stopwatchModel(createBillDto);
+
+    await stopwatch.save();
+
+    return stopwatch;
   }
 
-  findAll() {
-    return `This action returns all stopwatch`;
+  async findAll() {
+    const stopwatchs = await this.stopwatchModel.find().sort({ name: 1 });
+
+    return stopwatchs;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} stopwatch`;
+  async findOne(id: string) {
+    const stopwatch = await this.stopwatchModel.findById(id);
+
+    if (!stopwatch)
+      throw new BadRequestException(
+        Messages.error.notFound(ModuleItems.stopwatch),
+      );
+
+    return stopwatch;
   }
 
-  update(id: number, updateStopwatchDto: UpdateStopwatchDto) {
-    return `This action updates a #${id} stopwatch`;
+  async update(
+    id: string,
+    updateBillDto: UpdateStopwatchDto,
+    // systemRequirementsDto: SystemRequirementsDto,
+  ) {
+    await this.findOne(id);
+
+    const stopwatch = await this.stopwatchModel.findByIdAndUpdate(
+      id,
+      updateBillDto,
+      { new: true },
+    );
+
+    return stopwatch;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} stopwatch`;
+  async remove(
+    id: string,
+    // systemRequirementsDto: SystemRequirementsDto
+  ) {
+    const result = await this.stopwatchModel.deleteOne({ _id: id });
+
+    return !!result.deletedCount;
   }
 }
