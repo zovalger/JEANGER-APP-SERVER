@@ -1,3 +1,4 @@
+export { BasicUpdateBill_bySocket_Dto } from './basic-update-bill-by-socket.dto';
 export { BasicUpdateBillDto } from './basic-update-bill.dto';
 export { CreateBillDto } from './create-bill.dto';
 export { DeleteBillItemFromClientDto } from './delete-bill-item-from-client.dto';
