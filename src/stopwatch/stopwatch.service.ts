@@ -13,12 +13,19 @@ export class StopwatchService {
   ) {}
 
   async create(
-    createBillDto: CreateStopwatchDto,
+    createStopwatchDto: CreateStopwatchDto,
     // systemRequirementsDto: SystemRequirementsDto,
   ): Promise<StopwatchDocument> {
+    const { timeDate, timeSeted } = createStopwatchDto;
     // const { userId } = systemRequirementsDto;
 
-    const stopwatch = new this.stopwatchModel(createBillDto);
+    const tocreate = {
+      ...createStopwatchDto,
+      timeDate: timeDate || null,
+      timeSeted: timeSeted || null,
+    };
+
+    const stopwatch = new this.stopwatchModel(tocreate);
 
     await stopwatch.save();
 
@@ -44,14 +51,23 @@ export class StopwatchService {
 
   async update(
     id: string,
-    updateBillDto: UpdateStopwatchDto,
+    updateStopwatchDto: UpdateStopwatchDto,
     // systemRequirementsDto: SystemRequirementsDto,
   ) {
+    const { timeDate, timeSeted } = updateStopwatchDto;
+    // const { userId } = systemRequirementsDto;
+
+    const toUpdate = {
+      ...updateStopwatchDto,
+      timeDate: timeDate || null,
+      timeSeted: timeSeted || null,
+    };
+
     await this.findOne(id);
 
     const stopwatch = await this.stopwatchModel.findByIdAndUpdate(
       id,
-      updateBillDto,
+      toUpdate,
       { new: true },
     );
 

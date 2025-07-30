@@ -29,5 +29,5 @@ export class CreateStopwatchDto {
 
   @IsOptional()
   @IsDateString()
-  updatedAt: Date;
+  updatedAt: string;
 }

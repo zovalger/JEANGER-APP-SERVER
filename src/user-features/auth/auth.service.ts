@@ -94,6 +94,19 @@ export class AuthService {
     return { data: user, sessionToken };
   }
 
+  async deserializer(token: string) {
+    const sessionToken = await this.sessionTokenModel.findOne({ token });
+
+    if (!sessionToken) throw new ForbiddenException('Token not valid');
+
+    if (sessionToken.expiration.getTime() < Date.now())
+      throw new UnauthorizedException(Messages.error.defeatedToken());
+
+    const user = await this.userService.findOne(sessionToken.userId.toString());
+
+    return { data: user, sessionToken };
+  }
+
   private getJwtToken(jwtPayload: JwtPayload, tokenType: TokenTypes) {
     const expiresIn = this.getExpiresInToken(tokenType);
 
