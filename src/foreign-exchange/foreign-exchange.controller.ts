@@ -12,11 +12,15 @@ import { CreateForeignExchangeDto } from './dto/create-foreign-exchange.dto';
 import { UpdateForeignExchangeDto } from './dto/update-foreign-exchange.dto';
 import { Auth, GetUser } from 'src/user-features/auth/decorators';
 import { Types } from 'mongoose';
+import { ForeignExchangeGateway } from './foreign-exchange.gateway';
+import { ForeignExchangeSocketEvents } from './enums/foreign-exchange-socket-events.enum';
+import { ForeignExchangeDocument } from './models/foreign-exchange.model';
 
 @Controller('foreign-exchange')
 export class ForeignExchangeController {
   constructor(
     private readonly foreignExchangeService: ForeignExchangeService,
+    private readonly foreignExchangeGateway: ForeignExchangeGateway,
   ) {}
 
   @Post()
@@ -25,12 +29,12 @@ export class ForeignExchangeController {
     @GetUser('_id') userId: Types.ObjectId,
     @Body() createForeignExchangeDto: CreateForeignExchangeDto,
   ) {
-    console.log(createForeignExchangeDto);
-
     const foreignExchange = await this.foreignExchangeService.create(
       createForeignExchangeDto,
       userId.toString(),
     );
+
+    this.send(foreignExchange);
 
     return { data: foreignExchange };
   }
@@ -38,6 +42,8 @@ export class ForeignExchangeController {
   @Post('scraping')
   async webScraping() {
     const foreignExchange = await this.foreignExchangeService.webScraping();
+
+    this.send(foreignExchange);
 
     return { data: foreignExchange };
   }
@@ -73,6 +79,8 @@ export class ForeignExchangeController {
       updateForeignExchangeDto,
     );
 
+    this.send(foreignExchange);
+
     return { data: foreignExchange };
   }
 
@@ -80,6 +88,14 @@ export class ForeignExchangeController {
   async remove(@Param('id') id: string) {
     const result = await this.foreignExchangeService.remove(id);
 
+    // todo: ver que hacer con el socket cuando se elimina un registro
+
     return { data: result };
+  }
+
+  private send(foreignExchangeDocument: ForeignExchangeDocument) {
+    this.foreignExchangeGateway.server.emit(ForeignExchangeSocketEvents.set, {
+      data: foreignExchangeDocument,
+    });
   }
 }
