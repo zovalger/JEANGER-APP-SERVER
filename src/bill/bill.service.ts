@@ -17,6 +17,7 @@ import {
   isIncomingItemMoreRecent,
 } from './helpers/Bill.helpers';
 import { ProductService } from 'src/product-features/product/services';
+import { DeleteBillDto } from './dto/delete-bill.dto';
 
 @Injectable()
 export class BillService {
@@ -41,8 +42,6 @@ export class BillService {
       const products = await this.productService.findAll({
         _id: items.map((i) => i.productId.toString()),
       });
-
-      console.log(products);
 
       toCreate.items = items.map((i) => {
         const p = products.find(
@@ -89,18 +88,37 @@ export class BillService {
     id: string,
     updateBillDto: UpdateBillDto,
     systemRequirementsDto: SystemRequirementsDto,
-  ) {
-    await this.findOne(id);
+  ): Promise<BillDocument> {
+    const { updatedAt } = updateBillDto;
+
+    const old = await this.findOne(id);
+
+    if (updatedAt && new Date(updatedAt).getTime() < old.updatedAt.getTime())
+      throw new BadRequestException(
+        Messages.error.dataIsOlder(ModuleItems.bill),
+      );
 
     const bill = await this.billModel.findByIdAndUpdate(id, updateBillDto, {
       new: true,
     });
 
-    return bill;
+    return bill as BillDocument;
   }
 
-  async remove(id: string, systemRequirementsDto: SystemRequirementsDto) {
-    const result = await this.billModel.deleteOne({ _id: id });
+  async remove(
+    deleteBillDto: DeleteBillDto,
+    systemRequirementsDto: SystemRequirementsDto,
+  ) {
+    const { updatedAt, _id } = deleteBillDto;
+
+    const old = await this.findOne(_id);
+
+    if (updatedAt && new Date(updatedAt).getTime() < old.updatedAt.getTime())
+      throw new BadRequestException(
+        Messages.error.dataIsOlder(ModuleItems.bill),
+      );
+
+    const result = await this.billModel.deleteOne({ _id });
 
     return !!result.deletedCount;
   }

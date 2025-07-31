@@ -1,20 +1,17 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { Auth, GetUser } from 'src/user-features/auth/decorators';
 import { UserDocument } from 'src/user-features/user/models/user.model';
 import { BillService } from './bill.service';
-import { BasicUpdateBillDto, CreateBillDto } from './dto';
+import { CreateBillDto } from './dto';
+import { BillGateway } from './bill.gateway';
+import { BillSocketEvents } from './enums';
 
 @Controller('bill')
 export class BillController {
-  constructor(private readonly billService: BillService) {}
+  constructor(
+    private readonly billService: BillService,
+    private readonly billGateway: BillGateway,
+  ) {}
 
   @Post()
   @Auth()
@@ -25,6 +22,12 @@ export class BillController {
     const bill = await this.billService.create(createBillDto, {
       userId: user._id.toString(),
     });
+
+    this.billGateway.server.emit(BillSocketEvents.set, {
+      data: bill,
+      userId: user._id,
+    });
+
     return { data: bill };
   }
 
@@ -42,28 +45,39 @@ export class BillController {
     return { data: bill };
   }
 
-  @Patch(':id')
-  @Auth()
-  async update(
-    @Param('id') id: string,
-    @Body() basicUpdateBillDto: BasicUpdateBillDto,
-    @GetUser() user: UserDocument,
-  ) {
-    const bill = await this.billService.update(id, basicUpdateBillDto, {
-      userId: user._id.toString(),
-    });
+  // @Patch(':id')
+  // @Auth()
+  // async update(
+  //   @Param('id') id: string,
+  //   @Body() updateBillFromClientDto: UpdateBillFromClientDto,
+  //   @GetUser() user: UserDocument,
+  // ) {
+  //   const bill = await this.billService.update(id, updateBillFromClientDto, {
+  //     userId: user._id.toString(),
+  //   });
 
-    return { data: bill };
-  }
+  //   this.billGateway.server.emit(BillSocketEvents.set, {
+  //     data: bill,
+  //     userId: user._id,
+  //   });
 
-  @Delete(':id')
-  @Auth()
-  async remove(@Param('id') id: string, @GetUser() user: UserDocument) {
-    const bill = await this.billService.remove(id, {
-      userId: user._id.toString(),
-    });
-    return { data: bill };
-  }
+  //   return { data: bill };
+  // }
+
+  // @Delete(':id')
+  // @Auth()
+  // async remove(@Param('id') id: string, @GetUser() user: UserDocument) {
+  //   const result = await this.billService.remove(id, {
+  //     userId: user._id.toString(),
+  //   });
+
+  //   this.billGateway.server.emit(BillSocketEvents.remove, {
+  //     data: { _id: id },
+  //     userId: user._id,
+  //   });
+
+  //   return { data: result };
+  // }
 
   // @Post(':id/item')
   // @Auth()

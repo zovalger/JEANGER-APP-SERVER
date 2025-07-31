@@ -48,5 +48,8 @@ export class Messages {
 
     onDeleteProductHasChilds: (names: string[]) =>
       `no se puede eliminar debido a referencias existentes con (${names.join(', ')})`,
+
+    dataIsOlder: (item: ModuleItems) =>
+      `los datos de ${item} son mas antiguios que se encuentran registrados`,
   };
 }
