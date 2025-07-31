@@ -5,6 +5,7 @@ export enum ModuleItems {
   billItem = 'item de factura',
   product = 'producto',
   productReference = 'referencia entre productos',
+  productSetting = 'configuracion de productos',
   stopwatch = 'cronometro',
   foreignExchange = 'divisas',
 }

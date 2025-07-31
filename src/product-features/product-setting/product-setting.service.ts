@@ -1,20 +1,47 @@
-import { Injectable } from '@nestjs/common';
-import { CreateProductSettingDto } from './dto/create-product-setting.dto';
-import { UpdateProductSettingDto } from './dto/update-product-setting.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { ProductSetting } from './models';
+import { Messages, ModuleItems } from 'src/common/providers/Messages';
+import { CreateProductSettingDto, UpdateProductSettingDto } from './dto';
 
 @Injectable()
 export class ProductSettingService {
-  constructor() {}
+  constructor(
+    @InjectModel(ProductSetting.name)
+    private readonly productSettingModel: Model<ProductSetting>,
+  ) {}
 
-  create(createProductSettingDto: CreateProductSettingDto) {
-    return 'This action adds a new productSetting';
+  async create(createProductSettingDto: CreateProductSettingDto) {
+    const productSetting = new this.productSettingModel(
+      createProductSettingDto,
+    );
+
+    await productSetting.save();
+
+    return productSetting;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} productSetting`;
+  async findOne() {
+    const productSetting = await this.productSettingModel.findOne();
+
+    if (!productSetting)
+      throw new NotFoundException(
+        Messages.error.notFound(ModuleItems.productSetting),
+      );
+
+    return productSetting;
   }
 
-  update(id: number, updateProductSettingDto: UpdateProductSettingDto) {
-    return `This action updates a #${id} productSetting`;
+  async update(id: string, updateProductSettingDto: UpdateProductSettingDto) {
+    await this.findOne();
+
+    const stopwatch = await this.productSettingModel.findByIdAndUpdate(
+      id,
+      updateProductSettingDto,
+      { new: true },
+    );
+
+    return stopwatch;
   }
 }

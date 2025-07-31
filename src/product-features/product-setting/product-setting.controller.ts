@@ -1,37 +1,30 @@
-import {
-  Controller,
-  // Get, Post, Body, Patch, Param, Delete
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param } from '@nestjs/common';
 import { ProductSettingService } from './product-setting.service';
-// import { CreateProductSettingDto } from './dto/create-product-setting.dto';
-// import { UpdateProductSettingDto } from './dto/update-product-setting.dto';
+import { CreateProductSettingDto, UpdateProductSettingDto } from './dto';
+import { Auth } from 'src/user-features/auth/decorators';
 
 @Controller('product-setting')
 export class ProductSettingController {
   constructor(private readonly productSettingService: ProductSettingService) {}
 
-  // @Post()
-  // create(@Body() createProductSettingDto: CreateProductSettingDto) {
-  //   return this.productSettingService.create(createProductSettingDto);
-  // }
+  @Post()
+  @Auth()
+  create(@Body() createProductSettingDto: CreateProductSettingDto) {
+    return this.productSettingService.create(createProductSettingDto);
+  }
 
-  // @Get()
-  // findAll() {
-  //   return this.productSettingService.findAll();
-  // }
+  @Get()
+  @Auth()
+  findOne() {
+    return this.productSettingService.findOne();
+  }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.productSettingService.findOne(+id);
-  // }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateProductSettingDto: UpdateProductSettingDto) {
-  //   return this.productSettingService.update(+id, updateProductSettingDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.productSettingService.remove(+id);
-  // }
+  @Patch(':id')
+  @Auth()
+  update(
+    @Param('id') id: string,
+    @Body() updateProductSettingDto: UpdateProductSettingDto,
+  ) {
+    return this.productSettingService.update(id, updateProductSettingDto);
+  }
 }
