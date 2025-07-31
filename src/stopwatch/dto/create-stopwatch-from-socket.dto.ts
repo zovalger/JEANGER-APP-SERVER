@@ -1,6 +1,6 @@
 import { OmitType } from '@nestjs/mapped-types';
 import { CreateStopwatchDto } from './create-stopwatch.dto';
 
-export class CreateStopwatchFromClientDto extends OmitType(CreateStopwatchDto, [
+export class CreateStopwatchFromSocketDto extends OmitType(CreateStopwatchDto, [
   'createdBy',
 ]) {}

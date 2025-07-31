@@ -2,71 +2,84 @@ import {
   WebSocketGateway,
   SubscribeMessage,
   MessageBody,
-  ConnectedSocket,
   WebSocketServer,
   WsException,
 } from '@nestjs/websockets';
+import { UsePipes, ValidationPipe } from '@nestjs/common';
+import { Server } from 'socket.io';
+
 import { StopwatchService } from './stopwatch.service';
-import { CreateStopwatchFromClientDto, UpdateStopwatchDto } from './dto';
-import { Server, Socket } from 'socket.io';
-import { AuthService } from 'src/user-features/auth/auth.service';
+import {
+  CreateStopwatchFromSocketDto,
+  RemoveStopwatchFromSocketDto,
+  UpdateStopwatchFromSocketDto,
+} from './dto';
+import { StopwatchSocketEvents } from './enums';
+import { AuthSocket, GetUserSocket } from 'src/user-features/auth/decorators';
+import { UserDocument } from 'src/user-features/user/models/user.model';
 
 @WebSocketGateway()
+@UsePipes(
+  new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+  }),
+)
 export class StopwatchGateway {
-  constructor(
-    private readonly stopwatchService: StopwatchService,
-    private readonly authService: AuthService,
-  ) {}
+  constructor(private readonly stopwatchService: StopwatchService) {}
   @WebSocketServer() server: Server;
 
-  @SubscribeMessage('createStopwatch')
+  @SubscribeMessage(StopwatchSocketEvents.create)
+  @AuthSocket()
   async create(
-    @MessageBody() createStopwatchDto: CreateStopwatchFromClientDto,
-    @ConnectedSocket() client: Socket,
+    @GetUserSocket() user: UserDocument,
+    @MessageBody() createStopwatchDto: CreateStopwatchFromSocketDto,
   ) {
-    const token = client.handshake.headers['x-access-token'];
-
-    if (!token) throw new WsException('no token');
-
-    const { data: user } = await this.authService.deserializer(
-      token instanceof Array ? token[0] : token,
-    );
-
     const stopwatch = await this.stopwatchService.create({
       ...createStopwatchDto,
       createdBy: user._id.toString(),
     });
 
-    this.server.emit('setStopwatch', { data: stopwatch, userId: user._id });
+    this.server.emit(StopwatchSocketEvents.set, {
+      data: stopwatch,
+      userId: user._id,
+    });
   }
 
-  @SubscribeMessage('updateStopwatch')
+  @SubscribeMessage(StopwatchSocketEvents.set)
+  @AuthSocket()
   async update(
-    @MessageBody() updateStopwatchDto: UpdateStopwatchDto,
-    @ConnectedSocket() client: Socket,
+    @GetUserSocket() user: UserDocument,
+    @MessageBody() updateStopwatchDto: UpdateStopwatchFromSocketDto,
   ) {
-    const token = client.handshake.headers['x-access-token'];
-
-    if (!token) throw new WsException('no token');
-
-    const { data } = await this.authService.deserializer(
-      token instanceof Array ? token[0] : token,
-    );
-
     const stopwatch = await this.stopwatchService.update(
       updateStopwatchDto._id,
       updateStopwatchDto,
     );
 
-    this.server.emit('setStopwatch', { data: stopwatch, userId: data._id });
+    this.server.emit(StopwatchSocketEvents.set, {
+      data: stopwatch,
+      userId: user._id,
+    });
   }
 
-  @SubscribeMessage('removeStopwatch')
-  async remove(@MessageBody() id: string) {
-    const deleted = await this.stopwatchService.remove(id);
+  @SubscribeMessage(StopwatchSocketEvents.remove)
+  @AuthSocket()
+  async remove(
+    @GetUserSocket() user: UserDocument,
+    @MessageBody() removeStopwatchFromSocketDto: RemoveStopwatchFromSocketDto,
+  ) {
+    const deleted = await this.stopwatchService.remove(
+      removeStopwatchFromSocketDto._id,
+      removeStopwatchFromSocketDto,
+    );
 
-    if (!deleted) return;
+    if (!deleted) throw new WsException('error al eliminar stopwatch');
 
-    this.server.emit('removeStopwatch', { data: { _id: id } });
+    this.server.emit(StopwatchSocketEvents.remove, {
+      data: removeStopwatchFromSocketDto,
+      userId: user._id,
+    });
   }
 }

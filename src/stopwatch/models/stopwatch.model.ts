@@ -7,6 +7,9 @@ export type StopwatchDocument = HydratedDocument<Stopwatch>;
 
 @Schema({ timestamps: true })
 export class Stopwatch {
+  @Prop({ type: String, required: true, unique: true })
+  tempId: string;
+
   @Prop({ type: String, required: true })
   name: string;
 

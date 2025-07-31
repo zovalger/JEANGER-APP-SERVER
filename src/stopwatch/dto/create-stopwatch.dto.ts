@@ -4,9 +4,13 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
 } from 'class-validator';
 
 export class CreateStopwatchDto {
+  @IsUUID()
+  tempId: string;
+
   @IsString()
   name: string;
 

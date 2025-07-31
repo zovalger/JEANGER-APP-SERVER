@@ -1,5 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateStopwatchDto, UpdateStopwatchDto } from './dto';
+import {
+  CreateStopwatchDto,
+  RemoveStopwatchDto,
+  UpdateStopwatchDto,
+} from './dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Stopwatch, StopwatchDocument, StopwatchModel } from './models';
 import { Model } from 'mongoose';
@@ -54,8 +58,7 @@ export class StopwatchService {
     updateStopwatchDto: UpdateStopwatchDto,
     // systemRequirementsDto: SystemRequirementsDto,
   ) {
-    const { timeDate, timeSeted } = updateStopwatchDto;
-    // const { userId } = systemRequirementsDto;
+    const { timeDate, timeSeted, updatedAt } = updateStopwatchDto;
 
     const toUpdate = {
       ...updateStopwatchDto,
@@ -63,7 +66,9 @@ export class StopwatchService {
       timeSeted: timeSeted || null,
     };
 
-    await this.findOne(id);
+    const old = await this.findOne(id);
+
+    if (old.updatedAt.getTime() > new Date(updatedAt).getTime()) return old;
 
     const stopwatch = await this.stopwatchModel.findByIdAndUpdate(
       id,
@@ -71,13 +76,21 @@ export class StopwatchService {
       { new: true },
     );
 
-    return stopwatch;
+    return stopwatch as StopwatchDocument;
   }
 
   async remove(
     id: string,
+    removeStopwatchDto: RemoveStopwatchDto,
     // systemRequirementsDto: SystemRequirementsDto
   ) {
+    const { updatedAt } = removeStopwatchDto;
+
+    const old = await this.findOne(id);
+
+    if (old.updatedAt.getTime() > new Date(updatedAt).getTime())
+      throw new BadRequestException('no se puede eliminar');
+
     const result = await this.stopwatchModel.deleteOne({ _id: id });
 
     return !!result.deletedCount;
