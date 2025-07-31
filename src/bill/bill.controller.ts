@@ -10,12 +10,7 @@ import {
 import { Auth, GetUser } from 'src/user-features/auth/decorators';
 import { UserDocument } from 'src/user-features/user/models/user.model';
 import { BillService } from './bill.service';
-import {
-  BasicUpdateBillDto,
-  CreateBillDto,
-  DeleteBillItemFromClientDto,
-  SetBillItemFromClientDto,
-} from './dto';
+import { BasicUpdateBillDto, CreateBillDto } from './dto';
 
 @Controller('bill')
 export class BillController {
@@ -70,34 +65,34 @@ export class BillController {
     return { data: bill };
   }
 
-  @Post(':id/item')
-  @Auth()
-  async updateItem(
-    @Param('id') id: string,
-    @Body() setBillItemFromClientDto: SetBillItemFromClientDto,
-    @GetUser() user: UserDocument,
-  ) {
-    const item = await this.billService.setItem(
-      id,
-      { ...setBillItemFromClientDto, createdBy: user._id.toString() },
-      { userId: user._id.toString() },
-    );
+  // @Post(':id/item')
+  // @Auth()
+  // async updateItem(
+  //   @Param('id') id: string,
+  //   @Body() setBillItemFromClientDto: SetBillItemFromClientDto,
+  //   @GetUser() user: UserDocument,
+  // ) {
+  //   const item = await this.billService.setItem(
+  //     id,
+  //     { ...setBillItemFromClientDto, createdBy: user._id.toString() },
+  //     { userId: user._id.toString() },
+  //   );
 
-    return { data: item };
-  }
+  //   return { data: item };
+  // }
 
-  @Delete(':id/item')
-  @Auth()
-  async removeItem(
-    @Param('id') id: string,
-    @Body() deleteBillItemFromClientDto: DeleteBillItemFromClientDto,
-    @GetUser() user: UserDocument,
-  ) {
-    const bill = await this.billService.deleteItem(
-      id,
-      { ...deleteBillItemFromClientDto, createdBy: user._id.toString() },
-      { userId: user._id.toString() },
-    );
-    return { data: bill };
-  }
+  // @Delete(':id/item')
+  // @Auth()
+  // async removeItem(
+  //   @Param('id') id: string,
+  //   @Body() deleteBillItemFromClientDto: DeleteBillItemFromClientDto,
+  //   @GetUser() user: UserDocument,
+  // ) {
+  //   const bill = await this.billService.deleteItem(
+  //     id,
+  //     { ...deleteBillItemFromClientDto, createdBy: user._id.toString() },
+  //     { userId: user._id.toString() },
+  //   );
+  //   return { data: bill };
+  // }
 }

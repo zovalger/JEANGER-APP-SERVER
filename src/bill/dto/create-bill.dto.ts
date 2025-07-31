@@ -1,40 +1,15 @@
 import {
   IsArray,
   IsDateString,
-  IsEnum,
   IsMongoId,
   IsNumber,
   IsOptional,
-  IsPositive,
   IsString,
   IsUUID,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { CurrencyType } from 'src/common/enums/currency-type.enum';
-import mongoose from 'mongoose';
-
-class ItemDto {
-  @IsMongoId()
-  productId: string | mongoose.Types.ObjectId;
-
-  @IsNumber()
-  @IsPositive()
-  quantity: number;
-
-  @IsNumber()
-  cost: number;
-
-  @IsString()
-  @IsEnum(CurrencyType)
-  currencyType: CurrencyType;
-
-  @IsDateString()
-  createdAt: Date | string;
-
-  @IsDateString()
-  updatedAt: Date | string;
-}
+import { SetBillItemDto } from './set-bill-item.dto';
 
 class TotalsDto {
   @IsNumber()
@@ -45,18 +20,18 @@ class TotalsDto {
 }
 
 export class CreateBillDto {
-  @IsOptional()
-  @IsString()
-  name?: string;
-
   @IsUUID()
   tempId: string;
 
   @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => ItemDto)
-  items?: ItemDto[];
+  @Type(() => SetBillItemDto)
+  items?: SetBillItemDto[];
 
   // @IsOptional()
   // @IsString()
@@ -68,11 +43,14 @@ export class CreateBillDto {
   @Type(() => TotalsDto)
   totals?: TotalsDto;
 
-  @IsOptional()
-  @IsDateString()
-  createdAt: Date | string;
+  @IsMongoId()
+  createdBy: string;
 
   @IsOptional()
   @IsDateString()
-  updatedAt: Date | string;
+  createdAt: string;
+
+  @IsOptional()
+  @IsDateString()
+  updatedAt: string;
 }

@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 export interface IStopwatch {
   _id: string;
+  tempId: string;
   name: string;
   timeDate: number | null;
   accumulatedTime: number;
