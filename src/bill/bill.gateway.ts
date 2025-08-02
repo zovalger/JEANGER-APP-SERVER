@@ -20,7 +20,7 @@ import {
 import { Messages, ModuleItems } from 'src/common/providers/Messages';
 import { DeleteBillDto } from './dto/delete-bill.dto';
 
-@WebSocketGateway()
+@WebSocketGateway({ cors: { origin: '*' } })
 @UsePipes(
   new ValidationPipe({
     whitelist: true,

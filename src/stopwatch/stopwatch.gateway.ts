@@ -18,7 +18,7 @@ import { StopwatchSocketEvents } from './enums';
 import { AuthSocket, GetUserSocket } from 'src/user-features/auth/decorators';
 import { UserDocument } from 'src/user-features/user/models/user.model';
 
-@WebSocketGateway()
+@WebSocketGateway({ cors: { origin: '*' } })
 @UsePipes(
   new ValidationPipe({
     whitelist: true,
