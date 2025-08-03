@@ -11,10 +11,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { CurrencyType } from 'src/common/enums/currency-type.enum';
-import {
-  keywordsNormalizeHelper,
-  strToUniqueWordArrayHelper,
-} from '../helpers';
+import { keywordsNormalizeHelper } from '../helpers';
 
 export class CreateProductDto {
   @IsString()
@@ -46,43 +43,15 @@ export class CreateProductDto {
 
     return uniquesValue;
   })
-  keywords: string[];
-
-  @IsOptional()
-  @IsArray()
-  @Transform(({ obj }: TransformFnParams) => {
-    const name = obj?.name;
-
-    if (typeof name !== 'string') return;
-
-    return strToUniqueWordArrayHelper(name);
-  })
-  autoKeywords: string[];
-
-  @IsOptional()
-  @IsArray()
-  @Transform(({ obj }: TransformFnParams) => {
-    if (typeof obj !== 'object') return;
-
-    const keywords: string[] = obj?.keywords || [];
-
-    const autoKeywords =
-      typeof obj?.name === 'string' ? strToUniqueWordArrayHelper(obj.name) : [];
-
-    const toSet: string[] = [...keywords];
-
-    autoKeywords.map((word) => {
-      const normilizeWord = keywordsNormalizeHelper(word);
-      if (!toSet.includes(normilizeWord)) toSet.push(normilizeWord);
-    });
-
-    return toSet;
-  })
-  allKeywords: string[];
+  keywords?: string[];
 
   @IsNumber()
   priority: number;
 
   @IsBoolean()
   favorite;
+
+  @IsOptional()
+  @IsString()
+  instructions: string;
 }

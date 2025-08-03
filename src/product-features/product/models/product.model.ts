@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 import { HydratedDocument } from 'mongoose';
 import { CurrencyType } from 'src/common/enums/currency-type.enum';
+import { UserModel } from 'src/user-features/user/models/user.model';
 
 export type ProductDocument = HydratedDocument<Product>;
 
@@ -45,7 +46,14 @@ export class Product {
   @Prop({ type: Boolean, default: false })
   favorite: boolean;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
+  @Prop({ type: String, default: '' })
+  instructions: string;
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: UserModel.name,
+    required: true,
+  })
   createdBy: mongoose.Types.ObjectId;
 
   @Prop()

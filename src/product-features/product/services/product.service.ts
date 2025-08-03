@@ -35,9 +35,16 @@ export class ProductService {
   ) {
     const { userId } = systemRequirementsDto;
 
+    const { autoKeywords, allKeywords } = this.getKeywords({
+      name: createProductDto.name,
+      keywords: createProductDto.keywords || [],
+    });
+
     const product = new this.productModel({
       ...createProductDto,
       createdBy: userId,
+      autoKeywords,
+      allKeywords,
     });
 
     await product.save();
@@ -96,13 +103,23 @@ export class ProductService {
 
     const productOldVersion = await this.findOne(id);
 
-    toUpdate = this.updateKeywords(productOldVersion, toUpdate);
-
     toUpdate = await this.updateCostByCurrencyType(productOldVersion, toUpdate);
 
-    const product = (await this.productModel.findByIdAndUpdate(id, toUpdate, {
-      new: true,
-    })) as ProductDocument;
+    const { autoKeywords, allKeywords } = this.getKeywords(
+      {
+        name: toUpdate.name || productOldVersion.name,
+        keywords: toUpdate.keywords || productOldVersion.keywords,
+      },
+      productOldVersion,
+    );
+
+    const product = (await this.productModel.findByIdAndUpdate(
+      id,
+      { ...toUpdate, autoKeywords, allKeywords },
+      {
+        new: true,
+      },
+    )) as ProductDocument;
 
     await this.updateChildrenDecision(
       id,
@@ -113,41 +130,26 @@ export class ProductService {
     return product;
   }
 
-  private updateKeywords(
-    product: ProductDocument,
-    updateProductDto: UpdateProductDto,
-  ): UpdateProductDto {
-    const { keywords, name } = updateProductDto;
+  private getKeywords(
+    newProductData: Pick<Product, 'keywords' | 'name'>,
+    oldData?: ProductDocument,
+  ): Pick<Product, 'autoKeywords' | 'allKeywords'> {
+    const { keywords, name } = newProductData;
 
-    if (!keywords && !name) return updateProductDto;
+    const newData: Pick<Product, 'autoKeywords' | 'allKeywords'> = {
+      autoKeywords: [],
+      allKeywords: [],
+    };
 
-    const newData = { ...updateProductDto };
+    newData.autoKeywords =
+      oldData && oldData.name === name
+        ? oldData.autoKeywords
+        : strToUniqueWordArrayHelper(name);
 
-    let newAll: string[] = [];
-
-    if (name && product.name !== name) {
-      const arr = strToUniqueWordArrayHelper(name);
-      newData.autoKeywords = arr;
-      newAll = [...newAll, ...arr];
-    } else {
-      newAll = [...product.autoKeywords];
-    }
-
-    const keywordsStr = keywords?.join() || null;
-    const currentKeywordsStr = product.keywords.join();
-
-    if (
-      keywords &&
-      keywordsStr !== null &&
-      keywordsStr !== currentKeywordsStr
-    ) {
-      newData.keywords = keywords;
-      newAll = [...newAll, ...keywords];
-    } else {
-      newAll = [...newAll, ...product.keywords];
-    }
-
-    newData.allKeywords = uniqueValuesArrayHelper(newAll);
+    newData.allKeywords = uniqueValuesArrayHelper([
+      ...keywords,
+      ...newData.autoKeywords,
+    ]);
 
     return newData;
   }
