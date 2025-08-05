@@ -130,11 +130,18 @@ export class ProductReferenceService {
 
     const toParents = await this.productService.findAllExcept(noId);
 
-    return toParents.map((v) => v._id.toString());
+    return toParents.map((v) => ({
+      _id: v._id.toString(),
+      name: v.name,
+      cost: v.cost,
+      currencyType: v.currencyType,
+    }));
   }
 
   async isPosibleParent(parentId: string, childId: string): Promise<boolean> {
-    return (await this.getPosibleProductParents(childId)).includes(parentId);
+    return (await this.getPosibleProductParents(childId))
+      .map((i) => i._id.toString())
+      .includes(parentId);
   }
 
   // ****************************************************************************
