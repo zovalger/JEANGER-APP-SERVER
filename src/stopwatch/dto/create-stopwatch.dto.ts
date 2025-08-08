@@ -1,3 +1,4 @@
+import { Transform, TransformFnParams } from 'class-transformer';
 import {
   IsDateString,
   IsMongoId,
@@ -15,14 +16,20 @@ export class CreateStopwatchDto {
   name: string;
 
   @IsOptional()
-  @IsNumber()
+  @Transform(({ value }: TransformFnParams) => {
+    console.log(value);
+    return typeof value == 'number' ? value : null;
+  })
   timeDate: number | null;
 
   @IsNumber()
   accumulatedTime: number;
 
   @IsOptional()
-  @IsNumber()
+  @Transform(({ value }: TransformFnParams) => {
+    console.log(value);
+    return typeof value == 'number' ? value : null;
+  })
   timeSeted: number | null;
 
   @IsMongoId()

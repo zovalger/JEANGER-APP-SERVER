@@ -5,7 +5,7 @@ import {
   WebSocketServer,
   WsException,
 } from '@nestjs/websockets';
-import { UsePipes, ValidationPipe } from '@nestjs/common';
+// import { UsePipes, ValidationPipe } from '@nestjs/common';
 import { Server } from 'socket.io';
 
 import { StopwatchService } from './stopwatch.service';
@@ -19,13 +19,13 @@ import { AuthSocket, GetUserSocket } from 'src/user-features/auth/decorators';
 import { UserDocument } from 'src/user-features/user/models/user.model';
 
 @WebSocketGateway({ cors: { origin: '*' } })
-@UsePipes(
-  new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-  }),
-)
+// @UsePipes(
+//   new ValidationPipe({
+//     whitelist: true,
+//     forbidNonWhitelisted: true,
+//     transform: true,
+//   }),
+// )
 export class StopwatchGateway {
   constructor(private readonly stopwatchService: StopwatchService) {}
   @WebSocketServer() server: Server;
