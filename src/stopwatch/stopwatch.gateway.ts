@@ -4,9 +4,10 @@ import {
   MessageBody,
   WebSocketServer,
   WsException,
+  ConnectedSocket,
 } from '@nestjs/websockets';
 // import { UsePipes, ValidationPipe } from '@nestjs/common';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 
 import { StopwatchService } from './stopwatch.service';
 import {
@@ -52,13 +53,14 @@ export class StopwatchGateway {
   async update(
     @GetUserSocket() user: UserDocument,
     @MessageBody() updateStopwatchDto: UpdateStopwatchFromSocketDto,
+    @ConnectedSocket() client: Socket,
   ) {
     const stopwatch = await this.stopwatchService.update(
       updateStopwatchDto._id,
       updateStopwatchDto,
     );
 
-    this.server.emit(StopwatchSocketEvents.set, {
+    client.broadcast.emit(StopwatchSocketEvents.set, {
       data: stopwatch,
       userId: user._id,
     });
@@ -69,6 +71,7 @@ export class StopwatchGateway {
   async remove(
     @GetUserSocket() user: UserDocument,
     @MessageBody() removeStopwatchFromSocketDto: RemoveStopwatchFromSocketDto,
+    @ConnectedSocket() client: Socket,
   ) {
     const deleted = await this.stopwatchService.remove(
       removeStopwatchFromSocketDto._id,
@@ -77,7 +80,7 @@ export class StopwatchGateway {
 
     if (!deleted) throw new WsException('error al eliminar stopwatch');
 
-    this.server.emit(StopwatchSocketEvents.remove, {
+    client.broadcast.emit(StopwatchSocketEvents.remove, {
       data: removeStopwatchFromSocketDto,
       userId: user._id,
     });
