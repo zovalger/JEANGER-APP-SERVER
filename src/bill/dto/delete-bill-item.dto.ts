@@ -4,6 +4,5 @@ import { SetBillItemDto } from './set-bill-item.dto';
 export class DeleteBillItemDto extends PickType(SetBillItemDto, [
   'productId',
   'createdBy',
-  'createdAt',
   'updatedAt',
 ]) {}
