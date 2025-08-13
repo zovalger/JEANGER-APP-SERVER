@@ -71,7 +71,7 @@ export const deleteItemInBill = (
   return { items: newItems, totals };
 };
 
-const calculateTotals = (
+export const calculateTotals = (
   items: IBillItem[],
   foreignExchange: ForeignExchange,
 ) => {

@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { SystemRequirementsDto } from 'src/common/dto/system-requirements.dto';
@@ -13,6 +17,7 @@ import {
 } from './dto';
 import { billHelper } from './helpers';
 import {
+  calculateTotals,
   getItemInBillList,
   isIncomingItemMoreRecent,
 } from './helpers/Bill.helpers';
@@ -33,6 +38,9 @@ export class BillService {
     createBillDto: CreateBillDto,
     systemRequirementsDto: SystemRequirementsDto,
   ): Promise<BillDocument> {
+    if (!systemRequirementsDto.userId)
+      throw new InternalServerErrorException('not user');
+
     const { userId } = systemRequirementsDto;
     const { items } = createBillDto;
     const toCreate = { ...createBillDto, createdBy: userId };
@@ -43,7 +51,7 @@ export class BillService {
         _id: items.map((i) => i.productId.toString()),
       });
 
-      toCreate.items = items.map((i) => {
+      const newItems = items.map((i) => {
         const p = products.find(
           (a) => i.productId.toString() === a._id.toString(),
         );
@@ -60,6 +68,10 @@ export class BillService {
           createdBy: userId,
         };
       });
+
+      const f = await this.foreignExchangeService.last();
+      toCreate.items = newItems;
+      toCreate.totals = calculateTotals(newItems, f);
     }
 
     const bill = new this.billModel(toCreate);
