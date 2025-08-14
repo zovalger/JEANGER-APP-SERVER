@@ -9,6 +9,7 @@ import { ProductFeaturesModule } from './product-features/product-features.modul
 import { ForeignExchangeModule } from './foreign-exchange/foreign-exchange.module';
 import { BillModule } from './bill/bill.module';
 import { StopwatchModule } from './stopwatch/stopwatch.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { StopwatchModule } from './stopwatch/stopwatch.module';
     CommonModule,
 
     MongooseModule.forRoot(EnvConfiguration().mongodb_uri),
+    ScheduleModule.forRoot(),
     UserFeaturesModule,
     ProductFeaturesModule,
     ForeignExchangeModule,

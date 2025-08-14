@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  OnModuleInit,
 } from '@nestjs/common';
 import { CreateForeignExchangeDto } from './dto/create-foreign-exchange.dto';
 import { UpdateForeignExchangeDto } from './dto/update-foreign-exchange.dto';
@@ -13,13 +14,40 @@ import {
 } from './models/foreign-exchange.model';
 import { Model } from 'mongoose';
 import { Messages, ModuleItems } from 'src/common/providers/Messages';
+import { Cron } from '@nestjs/schedule';
+import { ForeignExchangeGateway } from './foreign-exchange.gateway';
+import { ForeignExchangeSocketEvents } from './enums/foreign-exchange-socket-events.enum';
 
 @Injectable()
-export class ForeignExchangeService {
+export class ForeignExchangeService implements OnModuleInit {
   constructor(
+    private readonly foreignExchangeGateway: ForeignExchangeGateway,
+
     @InjectModel(ForeignExchangeModel.name)
     private readonly foreignExchangeModel: Model<ForeignExchange>,
   ) {}
+
+  async onModuleInit() {
+    await this.webScraping();
+  }
+
+  @Cron('50 15 * * *')
+  async autoWebScraping_3PM() {
+    const data = await this.webScraping();
+
+    this.foreignExchangeGateway.server.emit(ForeignExchangeSocketEvents.set, {
+      data,
+    });
+  }
+
+  @Cron('0,15 14 * * *')
+  async autoWebScraping_4PM() {
+    const data = await this.webScraping();
+
+    this.foreignExchangeGateway.server.emit(ForeignExchangeSocketEvents.set, {
+      data,
+    });
+  }
 
   async webScraping() {
     const createForeignExchangeDto = await BCV_ForeignExchange();
@@ -33,7 +61,7 @@ export class ForeignExchangeService {
   ) {
     const foreignExchange = new this.foreignExchangeModel({
       ...createForeignExchangeDto,
-      createdBy: userId,
+      createdBy: userId || null,
     });
 
     await foreignExchange.save();
