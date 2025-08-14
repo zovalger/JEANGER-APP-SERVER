@@ -40,7 +40,7 @@ export class ForeignExchangeService implements OnModuleInit {
     });
   }
 
-  @Cron('0,15 14 * * *')
+  @Cron('0,15 16 * * *')
   async autoWebScraping_4PM() {
     const data = await this.webScraping();
 
