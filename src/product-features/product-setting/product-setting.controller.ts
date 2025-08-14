@@ -1,7 +1,8 @@
 import { Controller, Get, Post, Body, Patch, Param } from '@nestjs/common';
 import { ProductSettingService } from './product-setting.service';
 import { CreateProductSettingDto, UpdateProductSettingDto } from './dto';
-import { Auth } from 'src/user-features/auth/decorators';
+import { Auth, GetUser } from 'src/user-features/auth/decorators';
+import { UserDocument } from 'src/user-features/user/models/user.model';
 
 @Controller('product-setting')
 export class ProductSettingController {
@@ -9,22 +10,40 @@ export class ProductSettingController {
 
   @Post()
   @Auth()
-  create(@Body() createProductSettingDto: CreateProductSettingDto) {
-    return this.productSettingService.create(createProductSettingDto);
+  async create(
+    @Body() createProductSettingDto: CreateProductSettingDto,
+    @GetUser() user: UserDocument,
+  ) {
+    const data = await this.productSettingService.create(
+      createProductSettingDto,
+      { userId: user._id.toString() },
+    );
+
+    return { data };
   }
 
   @Get()
   @Auth()
-  findOne() {
-    return this.productSettingService.findOne();
+  async findOne(@GetUser() user: UserDocument) {
+    const data = await this.productSettingService.findOne('', {
+      userId: user._id.toString(),
+    });
+
+    return { data };
   }
 
   @Patch(':id')
   @Auth()
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateProductSettingDto: UpdateProductSettingDto,
+    @GetUser() user: UserDocument,
   ) {
-    return this.productSettingService.update(id, updateProductSettingDto);
+    const data = await this.productSettingService.update(
+      id,
+      updateProductSettingDto,
+      { userId: user._id.toString() },
+    );
+    return { data };
   }
 }
