@@ -61,7 +61,10 @@ export class ProductService {
       ? { ...filteredQuery, _id: { $in: filteredQuery._id } }
       : filteredQuery;
 
-    const promise = this.productModel.find(f).sort({ name: 1 });
+    const promise = this.productModel
+      .find(f)
+      .sort({ name: 1 })
+      .collation({ locale: 'es', strength: 2 });
 
     return await promise;
   }
@@ -69,7 +72,8 @@ export class ProductService {
   async findAllExcept(id: string[]) {
     const products = await this.productModel
       .find({ _id: { $nin: id } })
-      .sort({ name: 1 });
+      .sort({ name: 1 })
+      .collation({ locale: 'es', strength: 2 });
 
     return products;
   }

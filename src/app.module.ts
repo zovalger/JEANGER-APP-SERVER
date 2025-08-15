@@ -10,6 +10,7 @@ import { ForeignExchangeModule } from './foreign-exchange/foreign-exchange.modul
 import { BillModule } from './bill/bill.module';
 import { StopwatchModule } from './stopwatch/stopwatch.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { UtilsModule } from './utils/utils.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     ForeignExchangeModule,
     BillModule,
     StopwatchModule,
+    UtilsModule,
   ],
   controllers: [],
   providers: [],
