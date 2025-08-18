@@ -27,4 +27,15 @@ export class AuthController {
 
     return;
   }
+
+  @Post('refresh')
+  @Auth()
+  async refresh(
+    @GetUser() user: UserDocument,
+    @GetToken() token: SessionTokenDocument,
+  ) {
+    const session = await this.authService.refresh(user, token);
+
+    return { data: session };
+  }
 }

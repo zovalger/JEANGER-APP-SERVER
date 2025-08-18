@@ -33,6 +33,25 @@ export class AuthService {
     private readonly sessionTokenModel: Model<SessionToken>,
   ) {}
 
+  async createSession(user: UserDocument, type: TokenTypes) {
+    const sessionToken = new this.sessionTokenModel({
+      type: type,
+      userId: user._id,
+    });
+
+    const { expiresIn, token } = this.getJwtToken(
+      { id: sessionToken._id.toString() },
+      type,
+    );
+
+    sessionToken.token = token;
+    sessionToken.expiration = new Date(expiresIn);
+
+    await sessionToken.save();
+
+    return sessionToken;
+  }
+
   async login(loginUserDto: LoginUserDto) {
     const { email, password } = loginUserDto;
 
@@ -48,20 +67,7 @@ export class AuthService {
     if (!user.comparePassword(password))
       throw new BadRequestException(Messages.error.invalidCredentials());
 
-    const sessionToken = new this.sessionTokenModel({
-      type: TokenTypes.refresh,
-      userId: user._id,
-    });
-
-    const { expiresIn, token } = this.getJwtToken(
-      { id: sessionToken._id.toString() },
-      TokenTypes.refresh,
-    );
-
-    sessionToken.token = token;
-    sessionToken.expiration = new Date(expiresIn);
-
-    await sessionToken.save();
+    const sessionToken = await this.createSession(user, TokenTypes.refresh);
 
     return sessionToken;
   }
@@ -71,6 +77,17 @@ export class AuthService {
       userId: user._id,
       _id: sessionToken._id,
     });
+  }
+
+  async refresh(user: UserDocument, session: SessionTokenDocument) {
+    const { data: sesionUser } = await this.validateToken({
+      id: session._id.toString(),
+    });
+
+    if (user._id.toString() != sesionUser._id.toString())
+      throw new ForbiddenException();
+
+    return await this.createSession(user, TokenTypes.short);
   }
 
   async findById(id: string) {
