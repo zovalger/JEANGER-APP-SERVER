@@ -127,16 +127,18 @@ export class AuthService {
   private getJwtToken(jwtPayload: JwtPayload, tokenType: TokenTypes) {
     const expiresIn = this.getExpiresInToken(tokenType);
 
-    const token = this.jwtService.sign(jwtPayload, { expiresIn });
+    const token = this.jwtService.sign(jwtPayload, {
+      expiresIn: expiresIn.toString(),
+    });
 
-    return { token, expiresIn };
+    return { token, expiresIn: expiresIn + Date.now() };
   }
 
   private getExpiresInToken(type: TokenTypes): number {
     return (
-      ((type === TokenTypes.refresh
+      (type === TokenTypes.refresh
         ? this.configService.get<number>('JWT_REFRESH_EXPIRE_TIME')
-        : this.configService.get<number>('JWT_EXPIRE_TIME')) || 1) + Date.now()
+        : this.configService.get<number>('JWT_EXPIRE_TIME')) || 1
     );
   }
 }
