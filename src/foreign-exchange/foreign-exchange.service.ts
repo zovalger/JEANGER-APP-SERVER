@@ -25,7 +25,7 @@ export class ForeignExchangeService implements OnModuleInit {
 
     @InjectModel(ForeignExchangeModel.name)
     private readonly foreignExchangeModel: Model<ForeignExchange>,
-  ) {}
+  ) { }
 
   async onModuleInit() {
     await this.webScraping();
@@ -50,9 +50,16 @@ export class ForeignExchangeService implements OnModuleInit {
   }
 
   async webScraping() {
-    const createForeignExchangeDto = await BCV_ForeignExchange();
-    // todo: crear una forma de no sobrecargar el servidor si ya se esta haciendo un scraping
-    return await this.create(createForeignExchangeDto);
+    try {
+      const createForeignExchangeDto = await BCV_ForeignExchange();
+
+      // todo: crear una forma de no sobrecargar el servidor si ya se esta haciendo un scraping
+      return await this.create(createForeignExchangeDto);
+    } catch (error) {
+      console.log(error);
+
+      return;
+    }
   }
 
   async create(
