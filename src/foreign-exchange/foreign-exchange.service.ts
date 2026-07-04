@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   OnModuleInit,
 } from '@nestjs/common';
 import { CreateForeignExchangeDto } from './dto/create-foreign-exchange.dto';
@@ -25,40 +26,52 @@ export class ForeignExchangeService implements OnModuleInit {
 
     @InjectModel(ForeignExchangeModel.name)
     private readonly foreignExchangeModel: Model<ForeignExchange>,
-  ) { }
+  ) {}
 
-  async onModuleInit() {
-    await this.webScraping();
+  onModuleInit() {
+    this.webScraping()
+      .then(() => console.log('divisas obtenidas'))
+      .catch(() => {
+        console.log('error al obtener divisas en inicio');
+      });
   }
 
   @Cron('50 15 * * *')
   async autoWebScraping_3PM() {
-    const data = await this.webScraping();
+    try {
+      const data = await this.webScraping();
 
-    this.foreignExchangeGateway.server.emit(ForeignExchangeSocketEvents.set, {
-      data,
-    });
+      this.foreignExchangeGateway.server.emit(ForeignExchangeSocketEvents.set, {
+        data,
+      });
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   @Cron('0,15 16 * * *')
   async autoWebScraping_4PM() {
-    const data = await this.webScraping();
+    try {
+      const data = await this.webScraping();
 
-    this.foreignExchangeGateway.server.emit(ForeignExchangeSocketEvents.set, {
-      data,
-    });
+      this.foreignExchangeGateway.server.emit(ForeignExchangeSocketEvents.set, {
+        data,
+      });
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async webScraping() {
     try {
       const createForeignExchangeDto = await BCV_ForeignExchange();
 
-      // todo: crear una forma de no sobrecargar el servidor si ya se esta haciendo un scraping
       return await this.create(createForeignExchangeDto);
     } catch (error) {
       console.log(error);
-
-      return;
+      throw new InternalServerErrorException(
+        'error al obtener al scrapear bcv',
+      );
     }
   }
 
