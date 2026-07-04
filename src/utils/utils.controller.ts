@@ -1,6 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { UtilsService } from './utils.service';
 import { MovilnetQueryDto } from './dto/movilnet-query.dto';
+import { VenezuelanQueryDto } from './dto/venezuelan-query.dto';
 
 @Controller('utils')
 export class UtilsController {
@@ -9,6 +10,13 @@ export class UtilsController {
   @Get('movilnet-balance')
   async movilnetBalance(@Query() movilnetQueryDto: MovilnetQueryDto) {
     const data = await this.utilsService.getMovilnetBalance(movilnetQueryDto);
+
+    return { data };
+  }
+
+  @Get('venezuelan-data')
+  async venezuelanData(@Query() venezuelanQueryDto: VenezuelanQueryDto) {
+    const data = await this.utilsService.getVenezuelanData(venezuelanQueryDto);
 
     return { data };
   }
